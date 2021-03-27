@@ -18,7 +18,8 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 import sys
-sys.path.insert(0, 'C:\\Programming\\Projects\\ToDoList_WEB_Edition')
+import os 
+sys.path.insert(0, os.path.dirname(os.path.realpath("env.py"))) # Вставить путь директории проекта, если команда не сработает
 from data.db_session import SqlAlchemyBase
 import data.__all_models
 target_metadata = SqlAlchemyBase.metadata
