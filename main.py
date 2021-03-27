@@ -5,6 +5,7 @@ from sqlalchemy import func
 from data import db_session
 from data.users import User
 from data.tasks import Task
+from data.task_schema import TaskSchema
 from forms.tasks import TaskForm
 from forms.login import LoginForm
 from forms.register import RegisterForm
@@ -158,9 +159,15 @@ def search_request():
     elif session["url"] == url_for("upcoming_tasks"): # Изменить после создании upcoming_tasks.html
         # Запрашиваем задачи, название которых входит в поисковую строку
         tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
-                                           Task.title.like(f"%{searchbox}%")).order_by(Task.priority, Task.title).all()
+                                           Task.title.like(f"%{searchbox}%")).order_by(Task.scheduled_date, Task.priority, Task.title).all()
 
-    return jsonify(list(map(lambda x: [x.id, x.title, x.priority, x.scheduled_date, x.done], tasks))) # Изменить json сериализацию
+    result = []
+    for task in tasks:
+        schema = TaskSchema() # Создаем схему
+        json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
+        result.append(json_result)
+
+    return jsonify(result)
 
 @app.route("/dashboard", methods=["GET"])
 @login_required
@@ -180,7 +187,7 @@ def dashboard():
 
     # Заполняем статистику пустыми значениями
     weekday = weekdays(datetime.now().strftime("%A"))
-    data = {key: "" for key in weekday}
+    data = {key: 0 for key in weekday}
     for group, val in tasks:
         data[group.strftime("%A")] = val
 
@@ -200,7 +207,7 @@ def add_tasks():
 
         tasks = Task()
 
-        tasks.title = form.title.data
+        tasks.title = form.title.data.strip()
         tasks.priority = form.priority.data
         tasks.scheduled_date = form.scheduled_date.data
         tasks.user_id = current_user.id
@@ -235,13 +242,15 @@ def edit_tasks(task_id):
         tasks = db_sess.query(Task).filter(Task.id == task_id).first()
 
         if tasks:
-            tasks.title = form.title.data
+            tasks.title = form.title.data.strip()
             tasks.priority = form.priority.data
             tasks.scheduled_date = form.scheduled_date.data
             tasks.done = form.done.data
 
             if tasks.done:
                 tasks.completed_date = datetime.now().date()
+            else: # Скорее всего в дальнейшем не понадобится
+                tasks.completed_date = None
 
             db_sess.commit()
             return redirect(session.get("url")) # Перенаправляет на прошлую страницу
