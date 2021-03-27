@@ -1,10 +1,11 @@
 from flask import Flask, render_template, redirect, url_for, request, abort, jsonify, session
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from datetime import datetime, timedelta
+from sqlalchemy import func
 from data import db_session
 from data.users import User
-from data.tasks import Tasks
-from forms.tasks import TasksForm
+from data.tasks import Task
+from forms.tasks import TaskForm
 from forms.login import LoginForm
 from forms.register import RegisterForm
 from itertools import groupby
@@ -55,12 +56,14 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("tasks"))
+
     form = LoginForm()
 
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(
-            User.email == form.email.data).first()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
 
         # Проверяем если пользователь зарегистрирован в базе данных и пароли совпадают
         if user and user.check_password(form.password.data):
@@ -75,6 +78,9 @@ def login():
 
 @app.route("/register", methods=["GET", "POST"])
 def registration():
+    if current_user.is_authenticated:
+        return redirect(url_for("tasks"))
+
     form = RegisterForm()
 
     if form.validate_on_submit():
@@ -109,11 +115,12 @@ def tasks():
     session["url"] = url_for("tasks")
     
     db_sess = db_session.create_session()
-    today = datetime.strptime(f"{datetime.now().date()}", '%Y-%m-%d')
 
-    # Запрашиваем только задачи, созданные этим пользователем и дата которых совпадает с сегодняшним днем
-    tasks = db_sess.query(Tasks).filter(Tasks.user_id == current_user.id, Tasks.scheduled_date == today).all()
-    tasks = sorted(tasks, key=lambda x: x.priority) # Сортируем задачи по приоритетности
+    # Запрашиваем только задачи, созданные этим пользователем
+    # и дата которых совпадает с сегодняшним днем, 
+    # отсортированные по приоритету и алфавиту
+    tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
+                                        Task.scheduled_date == datetime.now().date()).order_by(Task.priority, Task.title).all()
 
     return render_template("index.html", title="Today's Tasks", tasks=tasks)
 
@@ -124,16 +131,14 @@ def upcoming_tasks():
     session["url"] = url_for("upcoming_tasks")
 
     db_sess = db_session.create_session()
-    # Запрашиваем все задачи, добавленный этим пользователем
-    tasks = db_sess.query(Tasks).filter(Tasks.user_id == current_user.id).all()
-    tasks = sorted(tasks, key=lambda x: x.priority) # Сортируем задачи по приоритетности
-    
-    # Сортируем и группируем задачи по дате
+    # Запрашиваем все задачи, добавленный этим пользователем, 
+    # отсортированные по приоритетности, алфавиту и дате
+    tasks = db_sess.query(Task).filter(Task.user_id == current_user.id).order_by(Task.scheduled_date, Task.priority, Task.title).all()
+
+    # Группируем задачи по дате
     data = {}
-    for key, group in groupby(sorted(tasks, key=lambda x: x.scheduled_date), key=lambda x: x.scheduled_date):
-        # Сортируем задачи по приоритетности
-        data[key] = sorted([thing for thing in group],
-                           key=lambda x: x.priority)
+    for key, group in groupby(tasks, key=lambda x: x.scheduled_date):
+        data[key] = [thing for thing in group]
 
     # Для того, чтобы правильно вывести задачи в таблицу посмотри циклы в templates/upcoming_tasks.html
     # Скорее всего придется делать новый template для правильного отображения
@@ -146,15 +151,16 @@ def search_request():
     searchbox = request.form.get("text") # Получаем содержимое строки поиска
 
     if session["url"] == url_for("tasks"):
-        today = datetime.strptime(f"{datetime.now().date()}", '%Y-%m-%d')
-        # Запрашиваем только задачи, созданные этим пользователем, дата которых совпадает с сегодняшним днем и название которых есть в поисковой строке
-        tasks = db_sess.query(Tasks).filter(Tasks.user_id == current_user.id, Tasks.scheduled_date == today, Tasks.title.like(f"%{searchbox}%")).all()
-        tasks = sorted(tasks, key=lambda x: x.priority) # Сортируем задачи по приоритетности
-    elif session["url"] == url_for("upcoming_tasks"): # Изменить при создании upcoming_tasks.html
-        tasks = db_sess.query(Tasks).filter(Tasks.user_id == current_user.id, Tasks.title.like(f"%{searchbox}%")).all()
-        tasks = sorted(tasks, key=lambda x: x.priority) # Сортируем задачи по приоритетности
+        # Запрашиваем задачи, название которых входит в поисковую строку
+        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
+                                           Task.scheduled_date == datetime.now().date(),
+                                           Task.title.like(f"%{searchbox}%")).order_by(Task.priority, Task.title).all()
+    elif session["url"] == url_for("upcoming_tasks"): # Изменить после создании upcoming_tasks.html
+        # Запрашиваем задачи, название которых входит в поисковую строку
+        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
+                                           Task.title.like(f"%{searchbox}%")).order_by(Task.priority, Task.title).all()
 
-    return jsonify(list(map(lambda x: [x.id, x.title, x.priority, x.scheduled_date, x.done], tasks)))
+    return jsonify(list(map(lambda x: [x.id, x.title, x.priority, x.scheduled_date, x.done], tasks))) # Изменить json сериализацию
 
 @app.route("/dashboard", methods=["GET"])
 @login_required
@@ -162,56 +168,58 @@ def dashboard():
     db_sess = db_session.create_session()
 
     # Находим дату недельной давности
-    last_week_date = datetime.today() - timedelta(7)
-    # Запрашиваем все выполненные этим пользователем задачи за последнюю неделю
-    tasks = db_sess.query(Tasks).filter(Tasks.user_id == current_user.id, Tasks.done == 1,
-                                        last_week_date < Tasks.scheduled_date, Tasks.scheduled_date <= datetime.now()).all()
+    last_week_date = datetime.now().date() - timedelta(7)
+
+    # Запрашиваем количество выполненных задач за последнуюю неделю, 
+    # за последнюю неделю 
+    tasks = db_sess.query(Task.completed_date, func.count(Task.id)).\
+                    filter(Task.user_id == current_user.id,
+                           Task.completed_date.between(last_week_date, datetime.now().date())).\
+                    group_by(Task.completed_date).\
+                    order_by(Task.completed_date.desc()).all()
 
     # Заполняем статистику пустыми значениями
     weekday = weekdays(datetime.now().strftime("%A"))
     data = {key: "" for key in weekday}
-    for key, group in groupby(reversed(sorted(tasks, key=lambda x: x.scheduled_date)), key=lambda x: x.scheduled_date.strftime("%A")):
-        data[key] = [val for val in group]
+    for group, val in tasks:
+        data[group.strftime("%A")] = val
 
     # Запрашиваем завершенные задачи за все время
-    tasks = db_sess.query(Tasks).filter(
-        Tasks.user_id == current_user.id, Tasks.done == 1).all()
-    completed = len(tasks)
+    completed_tasks = db_sess.query(func.count(Task.id)).filter(Task.user_id == current_user.id, Task.done == 1).first()[0]
 
-    return render_template('dashboard.html', title="Upcoming Tasks", tasks=data, completed=completed)
+    return render_template('dashboard.html', title="Dashboard", tasks=data, completed=completed_tasks)
 
 
 @app.route('/add_tasks',  methods=['GET', 'POST'])
 @login_required
 def add_tasks():
-    form = TasksForm()
+    form = TaskForm()
 
     if form.validate_on_submit():
         db_sess = db_session.create_session()
 
-        tasks = Tasks()
+        tasks = Task()
 
         tasks.title = form.title.data
         tasks.priority = form.priority.data
         tasks.scheduled_date = form.scheduled_date.data
-        tasks.done = form.done.data
         tasks.user_id = current_user.id
         db_sess.add(tasks)
         db_sess.commit()
         return redirect(session.get("url")) # Перенаправляет на прошлую страницу
-    return render_template('add_task.html', title='Adding a task', form=form)
+    return render_template('add_task.html', title='Add task', form=form)
 
 
 @app.route('/tasks/<int:task_id>',  methods=['GET', 'POST'])
 @login_required
 def edit_tasks(task_id):
-    form = TasksForm()
+    form = TaskForm()
 
-    # Если пользователь получает данные, то заполням форму текующими данными о задаче
+    # Если пользователь получает данные, то заполняем форму текующими данными о задаче
     if request.method == "GET":
         db_sess = db_session.create_session()
-        tasks = db_sess.query(Tasks).filter(
-            Tasks.id == task_id, Tasks.user_id == current_user.id).first()
+        tasks = db_sess.query(Task).filter(
+            Task.id == task_id, Task.user_id == current_user.id).first()
 
         if tasks:
             form.title.data = tasks.title
@@ -224,32 +232,36 @@ def edit_tasks(task_id):
     # Если форма готова к отправке, обновляем информацию на более актульную
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        tasks = db_sess.query(Tasks).filter(Tasks.id == task_id).first()
+        tasks = db_sess.query(Task).filter(Task.id == task_id).first()
 
         if tasks:
             tasks.title = form.title.data
             tasks.priority = form.priority.data
             tasks.scheduled_date = form.scheduled_date.data
             tasks.done = form.done.data
+
+            if tasks.done:
+                tasks.completed_date = datetime.now().date()
+
             db_sess.commit()
             return redirect(session.get("url")) # Перенаправляет на прошлую страницу
         else:
             abort(404)
 
-    return render_template('add_task.html', title='Editing a task', form=form)
+    return render_template('edit_task.html', title='Edit task', form=form)
 
 
 @app.route("/tasks_delete/<int:task_id>", methods=["GET", "POST"])
 @login_required
 def delete_task(task_id):
     db_sess = db_session.create_session()
-    task = db_sess.query(Tasks).filter(
-        Tasks.id == task_id, Tasks.user_id == current_user.id).first()
+    task = db_sess.query(Task).filter(
+        Task.id == task_id, Task.user_id == current_user.id).first()
 
     if task:
         db_sess.delete(task)
         db_sess.commit()
-        return redirect(request.referrer) # Перенаправляет на прошлую страницу
+        return redirect(session.get("url")) # Перенаправляет на прошлую страницу
     else:
         abort(404)
 
