@@ -33,10 +33,10 @@
                     </div>
                 {% endfor %}
             </p>
-            <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+            <p>{{ form.remember() }} {{ form.remember.label }}</p>
             <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
             <div>{{ message }}</div>
-            <a href="{{ url_for('registration') }}">Sign Up</a>
+            <a href="{{ url_for('users.register') }}">Sign Up</a>
         </form>
     </main>
     <script

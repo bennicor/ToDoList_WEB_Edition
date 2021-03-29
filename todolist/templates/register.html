@@ -34,9 +34,9 @@
                 {% endfor %}
             </p>
             <p>
-                {{ form.password_again.label }}<br>
-                {{ form.password_again(class="form-control", type="password") }}<br>
-                {% for error in form.password_again.errors %}
+                {{ form.confirm_password.label }}<br>
+                {{ form.confirm_password(class="form-control", type="password") }}<br>
+                {% for error in form.confirm_password.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}
                     </p>
@@ -54,7 +54,7 @@
             <div id="buttons_container">
                 <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
                 {{ message }}
-                <a href="{{ url_for('login') }}">Sign In</a>
+                <a href="{{ url_for('users.login') }}">Sign In</a>
             </div>
         </form>
     </main>
