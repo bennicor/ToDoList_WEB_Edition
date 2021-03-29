@@ -3,7 +3,6 @@ from wtforms import StringField, BooleanField, SubmitField, IntegerField, DateTi
 from wtforms.validators import DataRequired, NumberRange
 import datetime
 
-
 class TaskForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     priority = IntegerField("Priority", default=4, validators=[NumberRange(1, 4)])
