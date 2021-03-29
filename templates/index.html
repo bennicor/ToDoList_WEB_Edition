@@ -62,31 +62,45 @@
         return pattern.join('');
     }
 
-    $(document).ready(function(){
-        $.ajaxSetup ({
-            cache: false
-        });
+    function ready(fn) {
+        if (document.readyState != 'loading'){
+            fn();
+        } else {
+            document.addEventListener('DOMContentLoaded', fn);
+        }
+    }
 
-        $("#finder").on("input", function(e){
-            text = $("#finder").val();
+    ready(() => {
+        document.querySelector('#finder').addEventListener('input', event => {
+            let text = {search: document.querySelector('#finder').value};
+            let tasks = document.querySelector("#tasks");
 
-            $.ajax({
-                method: "post",
-                url: "{{ url_for('search_request') }}",
-                data: {text: text},
-                success: function(res) {
-                    var pattern, nodes = $();
+            fetch("{{ url_for('search_request') }}", {
+                method: 'POST',
+                body: JSON.stringify(text),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw Error(response.statusText);
+                }
 
-                    $.each(res, function(index, value) {
-                        pattern = createTaskPattern(value);
-                        nodes = nodes.add($(pattern));
+                response.json().then(function(data) {
+                    let pattern, nodes = "";
 
+                    data.forEach(element => {
+                        pattern = createTaskPattern(element);
+                        nodes += pattern;
                     });
 
-                    $('#tasks').html(nodes);
-                }
-            });
+                    tasks.innerHTML = nodes;
+                });
+            }).catch(function(error) {
+                tasks.innerHTML = "Failed to load";
+            })
         });
     });
 </script>
-{% endblock %}
+{% endblock script %}

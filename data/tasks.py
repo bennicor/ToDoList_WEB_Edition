@@ -1,4 +1,5 @@
 import datetime
+from marshmallow import Schema, fields
 from sqlalchemy import Column, String, Date, DateTime, Integer, Boolean, ForeignKey
 from sqlalchemy.orm import relation
 from .db_session import SqlAlchemyBase
@@ -15,3 +16,10 @@ class Task(SqlAlchemyBase):
     priority = Column(Integer, default=4)
     scheduled_date = Column(Date, default=datetime.datetime.now().date())
     completed_date = Column(Date, nullable=True)
+
+# Схема для сериализации запросов из строки поиска
+class TaskSchema(Schema):
+    id = fields.Int()
+    title = fields.Str()
+    done = fields.Bool()
+    priority = fields.Int()

@@ -1,11 +1,10 @@
-from flask import Flask, render_template, redirect, url_for, request, abort, jsonify, session
+from flask import Flask, render_template, redirect, url_for, request, abort, jsonify, session, make_response
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from data import db_session
 from data.users import User
-from data.tasks import Task
-from data.task_schema import TaskSchema
+from data.tasks import Task, TaskSchema
 from forms.tasks import TaskForm
 from forms.login import LoginForm
 from forms.register import RegisterForm
@@ -146,10 +145,10 @@ def upcoming_tasks():
     return render_template('index.html', title="Upcoming Tasks", tasks=tasks) # tasks заменить на data
 
 # Функция, делающая запросы в базу данных по мере ввода текста в поисковую строку
-@app.route("/search_request", methods=["GET", "POST"])
+@app.route("/search_request", methods=["POST"])
 def search_request():
     db_sess = db_session.create_session()
-    searchbox = request.form.get("text") # Получаем содержимое строки поиска
+    searchbox = request.get_json().get("search") # Получаем содержимое строки поиска
 
     if session["url"] == url_for("tasks"):
         # Запрашиваем задачи, название которых входит в поисковую строку
@@ -158,7 +157,7 @@ def search_request():
                                            Task.title.like(f"%{searchbox}%")).order_by(Task.priority, Task.title).all()
     elif session["url"] == url_for("upcoming_tasks"): # Изменить после создании upcoming_tasks.html
         # Запрашиваем задачи, название которых входит в поисковую строку
-        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
+        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, 
                                            Task.title.like(f"%{searchbox}%")).order_by(Task.scheduled_date, Task.priority, Task.title).all()
 
     result = []
@@ -167,7 +166,7 @@ def search_request():
         json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
         result.append(json_result)
 
-    return jsonify(result)
+    return make_response(jsonify(result), 200)
 
 @app.route("/dashboard", methods=["GET"])
 @login_required
