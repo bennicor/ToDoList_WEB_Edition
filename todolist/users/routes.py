@@ -1,11 +1,12 @@
-from flask import Flask, render_template, redirect, url_for, request, abort, jsonify, session, make_response, Blueprint
+from flask import Flask, render_template, redirect, url_for, request, session, Blueprint
 from flask_login import current_user, login_user, logout_user, login_required
 from datetime import datetime, timedelta
-from todolist.models import User, Task, Task
+from todolist.models import User, Task
 from itertools import groupby
 from todolist.helpers import weekdays
 from todolist.users.forms import RegistrationForm, LoginForm
 from todolist import db_session
+from sqlalchemy import func
 
 users = Blueprint('users', __name__)
 
@@ -18,10 +19,12 @@ def register():
     form = RegistrationForm()
 
     if form.validate_on_submit():
+        db_sess = db_session.create_session()
+
         user = User(name=form.name.data, email=form.email.data)
         user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
+        db_sess.add(user)
+        db_sess.commit()
         return redirect(url_for("users.login"))
     return render_template("register.html", title="Register", form=form)
 
@@ -60,11 +63,12 @@ def tasks():
     # Сохраняем url страницы
     session["url"] = url_for("users.tasks")
 
+    db_sess = db_session.create_session()
     # Запрашиваем только задачи, созданные этим пользователем
     # и дата которых совпадает с сегодняшним днем, 
     # отсортированные по приоритету и алфавиту
-    tasks = Task.query.filter_by(user_id=current_user.id,
-                                 scheduled_date=datetime.now().date()).order_by(Task.priority, Task.title).all()
+    tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
+                                        Task.scheduled_date == datetime.now().date()).order_by(Task.priority, Task.title).all()
 
     return render_template("index.html", title="Today's Tasks", tasks=tasks)
 
@@ -75,9 +79,10 @@ def upcoming_tasks():
     # Сохраняем url страницы
     session["url"] = url_for("users.upcoming_tasks")
 
+    db_sess = db_session.create_session()
     # Запрашиваем все задачи, добавленный этим пользователем, 
     # отсортированные по приоритетности, алфавиту и дате
-    tasks = Task.query.filter_by(user_id=current_user.id).order_by(Task.scheduled_date, Task.priority, Task.title).all()
+    tasks = db_sess.query(Task).filter(Task.user_id == current_user.id).order_by(Task.scheduled_date, Task.priority, Task.title).all()
 
     # Группируем задачи по дате
     data = {}
@@ -92,15 +97,18 @@ def upcoming_tasks():
 @users.route("/dashboard", methods=["GET"])
 @login_required
 def dashboard():
+    db_sess = db_session.create_session()
+
     # Находим дату недельной давности
     last_week_date = datetime.now().date() - timedelta(7)
 
     # Запрашиваем количество выполненных задач за последнуюю неделю, 
     # за последнюю неделю 
-    tasks = db.session.query(Task.completed_date, db.func.count(Task.id)).\
-                       filter(Task.user_id == current_user.id, Task.completed_date.between(last_week_date, datetime.now().date())).\
-                       group_by(Task.completed_date).\
-                       order_by(Task.completed_date.desc()).all()
+    tasks = db_sess.query(Task.completed_date, func.count(Task.id)).\
+                    filter(Task.user_id == current_user.id,
+                           Task.completed_date.between(last_week_date, datetime.now().date())).\
+                    group_by(Task.completed_date).\
+                    order_by(Task.completed_date.desc()).all()
 
     # Заполняем статистику пустыми значениями
     weekday = weekdays(datetime.now().strftime("%A"))
@@ -109,6 +117,6 @@ def dashboard():
         data[group.strftime("%A")] = val
 
     # Запрашиваем завершенные задачи за все время
-    completed_tasks = db.session.query(db.func.count(Task.id)).filter_by(user_id=current_user.id, done=1).first()[0]
+    completed_tasks = db_sess.query(func.count(Task.id)).filter(Task.user_id == current_user.id, Task.done == 1).first()[0]
 
     return render_template('dashboard.html', title="Dashboard", tasks=data, completed=completed_tasks)

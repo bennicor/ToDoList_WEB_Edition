@@ -14,6 +14,10 @@ def create_app():
     login_manager.init_app(app)
         
     from todolist.users.routes import users
+    from todolist.main.routes import main
+    from todolist.tasks.routes import tasks
     app.register_blueprint(users)
+    app.register_blueprint(main)
+    app.register_blueprint(tasks)
 
     return app

@@ -3,7 +3,7 @@ from wtforms import PasswordField, StringField, SubmitField, IntegerField, Boole
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flask_login import current_user
 from todolist.models import User
-
+from todolist import db_session
 
 class RegistrationForm(FlaskForm):
     name = StringField("Username", validators=[DataRequired(), Length(min=2, max=20)])
@@ -15,7 +15,8 @@ class RegistrationForm(FlaskForm):
 
     # Проверяем, если почтовый адрес еще не занят
     def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == email.data).first()
         
         if user:
             raise ValidationError('That email is taken. Please choose a different one.')

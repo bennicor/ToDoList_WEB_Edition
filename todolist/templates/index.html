@@ -12,7 +12,7 @@
                 >
                 <a href="{{ url_for('users.upcoming_tasks') }}" class="btn btn-secondary">All tasks</a>
             </div>
-            <a href="/add_tasks" class="btn btn-primary" id="new_task">New task</a>
+            <a href="{{ url_for('tasks.add_task') }}" class="btn btn-primary" id="new_task">New task</a>
         </div>
         <div class="cards" id="tasks">
             {% for item in tasks %}
