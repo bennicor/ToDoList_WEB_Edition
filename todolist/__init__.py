@@ -16,8 +16,10 @@ def create_app():
     from todolist.users.routes import users
     from todolist.main.routes import main
     from todolist.tasks.routes import tasks
+    from todolist.errors.handlers import errors
     app.register_blueprint(users)
     app.register_blueprint(main)
     app.register_blueprint(tasks)
+    app.register_blueprint(errors)
 
     return app

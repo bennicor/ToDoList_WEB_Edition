@@ -3,7 +3,7 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 from datetime import datetime
 from todolist import db_session
 from .forms import TaskForm
-from todolist.models import Task
+from todolist.models import Task, TaskSchema
 
 tasks = Blueprint("tasks", __name__)
 
@@ -23,12 +23,11 @@ def search_request():
         # Запрашиваем задачи, название которых входит в поисковую строку
         tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, 
                                            Task.title.like(f"%{searchbox}%")).order_by(Task.scheduled_date, Task.priority, Task.title).all()
-
     result = []
     for task in tasks:
         schema = TaskSchema() # Создаем схему
         json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
-        result.tasksend(json_result)
+        result.append(json_result)
 
     return make_response(jsonify(result), 200)
 
