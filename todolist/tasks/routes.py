@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, abort, jsonify, session, make_response, Blueprint
+from flask import Flask, render_template, redirect, url_for, request, abort, jsonify, session, make_response, Blueprint, flash
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from datetime import datetime
 from todolist import db_session
@@ -46,6 +46,7 @@ def add_task():
         tasks.user_id = current_user.id
         db_sess.add(tasks)
         db_sess.commit()
+        flash("Task has been added!", "info")
         return redirect(session.get("url")) # Перенаправляет на прошлую страницу
     return render_template('add_task.html', title='Add task', form=form)
 
@@ -86,6 +87,7 @@ def edit_task(task_id):
                 tasks.completed_date = None
 
             db_sess.commit()
+            flash("Task has been successfully edited!", "info")
             return redirect(session.get("url")) # Перенаправляет на прошлую страницу
         else:
             abort(404)
@@ -103,6 +105,7 @@ def delete_task(task_id):
     if task:
         db_sess.delete(task)
         db_sess.commit()
+        flash("Task has been deleted!", "info")
         return redirect(session.get("url")) # Перенаправляет на прошлую страницу
     else:
         abort(404)

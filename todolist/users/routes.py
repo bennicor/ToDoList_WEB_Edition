@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, session, Blueprint
+from flask import Flask, render_template, redirect, url_for, request, session, Blueprint, flash
 from flask_login import current_user, login_user, logout_user, login_required
 from datetime import datetime, timedelta
 from todolist.models import User, Task
@@ -44,15 +44,16 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get("next")
+            flash("You have been logged in!", "info")
             return redirect(next_page) if next_page else redirect(url_for("users.tasks"))
-        return render_template("login.html",
-                               message="Incorrect email or password",
-                               form=form)
+        flash("Incorrect email or password!", "error")
+        return render_template("login.html", form=form)
     return render_template('login.html', title='Authorization', form=form)
 
 
 @users.route("/logout", methods=["GET", "POST"])
 def logout():
+    flash(f"You have been logged out, {current_user.name}!", "info")
     logout_user()
     return redirect(url_for("main.index"))
 

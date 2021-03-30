@@ -81,6 +81,14 @@
             </div>
         </div>
 
+        <!-- Выводятся flash уведомления -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for msg in messages %}
+                    <p>{{ msg }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         {% block content %} {% endblock %}
     </body>
     {% block script %}{% endblock %}
