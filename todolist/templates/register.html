@@ -12,31 +12,50 @@
         <title>{{ title }}</title>
     </head>
     <main>
-        <h1 style="text-align: center;">Authorization</h1>
+        <h1 style="text-align: center;">Registration</h1>
         <form action="" method="post">
             {{ form.hidden_tag() }}
             <p>
                 {{ form.email.label }}<br>
                 {{ form.email(class="form-control", type="email") }}<br>
                 {% for error in form.email.errors %}
-                    <div class="alert alert-danger" role="alert">
+                    <p class="alert alert-danger" role="alert">
                         {{ error }}
-                    </div>
+                    </p>
                 {% endfor %}
             </p>
             <p>
                 {{ form.password.label }}<br>
                 {{ form.password(class="form-control", type="password") }}<br>
                 {% for error in form.password.errors %}
-                    <div class="alert alert-danger" role="alert">
+                    <p class="alert alert-danger" role="alert">
                         {{ error }}
-                    </div>
+                    </p>
                 {% endfor %}
             </p>
-            <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
-            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
-            <div>{{ message }}</div>
-            <a href="{{ url_for('registration') }}" class="btn btn-primary">Sign Up</a>
+            <p>
+                {{ form.confirm_password.label }}<br>
+                {{ form.confirm_password(class="form-control", type="password") }}<br>
+                {% for error in form.confirm_password.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.name.label }}<br>
+                {{ form.name(class="form-control") }}<br>
+                {% for error in form.name.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <div id="buttons_container">
+                <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+                {{ message }}
+                <a href="{{ url_for('users.login') }}">Sign In</a>
+            </div>
         </form>
     </main>
     <script
