@@ -52,7 +52,7 @@ def main():
 def index():
     if current_user.is_authenticated:
         return redirect(url_for("tasks"))
-    return render_template("base.html", title="Welcome!")
+    return redirect(url_for("login"))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -143,7 +143,7 @@ def upcoming_tasks():
 
     # Для того, чтобы правильно вывести задачи в таблицу посмотри циклы в templates/upcoming_tasks.html
     # Скорее всего придется делать новый template для правильного отображения
-    return render_template('index.html', title="Upcoming Tasks", tasks=tasks) # tasks заменить на data
+    return render_template('upcoming_tasks.html', title="Upcoming Tasks", tasks=data) # tasks заменить на data
 
 # Функция, делающая запросы в базу данных по мере ввода текста в поисковую строку
 @app.route("/search_request", methods=["GET", "POST"])
