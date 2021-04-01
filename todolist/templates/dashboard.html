@@ -1,13 +1,29 @@
-{% extends "base.html" %} 
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <main>
-    <p>{{ current_user.name }}</p>
-    <p>With us since {{ current_user.created_date.strftime("%Y-%m-%d") }}</p>
-    <p><b>{{ completed }}</b> completed tasks</p>
-
-    <h1>Weekly Activity</h1>
-    {% for key, val in tasks.items() %}
-        <h2>{{ key }} - {{ val }}</h2>
-    {% endfor %}
+    <div style="margin-top: 8em;">
+        <h1>{{ current_user.name }}</h1>
+        <h4>
+            With us since {{ current_user.created_date.strftime("%Y-%m-%d") }}
+        </h3>
+        <h3 class="display-6"><b>{{ completed }}</b> completed tasks</h3>
+        <br>
+        <h3><b>Weekly Activity</b></h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                  <th scope="col">Day</th>
+                  <th scope="col">Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, val in tasks.items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ val }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </main>
 {% endblock content %}

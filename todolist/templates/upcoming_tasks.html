@@ -1,24 +1,59 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <main>
-    <div style="margin-top: 8em;">
-        <h1 style="text-align: center;">Upcoming Tasks</h1>
-        <a href="/add_tasks" class="btn btn-primary">Add Task</a>
+    <div style="margin-top: 8em">
+        <h1 style="text-align: center">Upcoming Tasks</h1>
         <a href="/tasks/today" class="btn btn-primary">Today's Tasks</a>
-
+        <a
+            class="btn btn-primary"
+            data-toggle="modal"
+            data-target="#AddTaskModal"
+            >Add Task</a
+        >
         {% for key, val in tasks.items() %}
-            <h1 style="text-align: center;">{{ key.strftime("%m/%d/%Y") }}</h1>
-            {% for thing in val %}
-                <div style="margin: 20px;">
-                    <h2>{{ thing.title }} - {% if thing.done %} Done! {% else %} In progress {% endif %}</h2>
-                    <h4>Task Priority: {{ thing.priority }}</h4>
+        <h1 style="text-align: center">{{ key.strftime("%m.%d.%Y") }}</h1>
+        <div class="cards" id="tasks">
+            {% for item in val %}
+            <div class="card text-center" style="width: 18rem">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ item.title }} - {% if item.done %} Done! {% else %}
+                        In progress {% endif %}
+                    </h5>
+                    <p class="card-text">Priority: {{ item.priority }}</p>
+                    <div>
+                        {% if item.done %}
+                        <button
+                            type="button"
+                            class="btn btn-primary active"
+                            data-toggle="button"
+                            autocomplete="off"
+                            aria-pressed="true"
+                        >
+                            Done
+                        </button>
+                        {% else %}
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            data-toggle="button"
+                            autocomplete="off"
+                        >
+                            Done
+                        </button>
+                        {% endif %}
+                        <a href="/tasks/{{ item.id }}" class="btn btn-info"
+                            >Edit</a
+                        >
+                        <a
+                            href="/tasks_delete/{{ item.id }}"
+                            class="btn btn-danger"
+                            >Delete</a
+                        >
+                    </div>
                 </div>
-                <div style="margin: 20px;">
-                    <a href="/tasks/{{ thing.id }}" class="btn btn-warning">Edit Task</a>
-                    <a href="/tasks_delete/{{ thing.id }}" class="btn btn-danger">Delete Task</a>
-                </div>
+            </div>
             {% endfor %}
+        </div>
         {% endfor %}
     </div>
 </main>

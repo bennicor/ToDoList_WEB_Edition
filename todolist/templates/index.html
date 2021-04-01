@@ -1,113 +1,67 @@
 {% extends "base.html" %} {% block content %}
 <main>
-    <div class="container" id="cards" style="margin-top: 8em;">
+    <div class="container" id="cards" style="margin-top: 8em">
         <div class="card_header">
-            <h1>{{ list_name }}</h1>
+            <h1 style="text-align: center">Today Tasks</h1>
             <div class="btn-group">
                 <a
-                    href="{{ url_for('users.tasks') }}"
-                    class="btn btn-secondary"
-                    aria-current="page"
-                    >Today's tasks</a
+                    href="{{ url_for('users.upcoming_tasks') }}"
+                    class="btn btn-primary"
+                    >All tasks</a
                 >
-                <a href="{{ url_for('users.upcoming_tasks') }}" class="btn btn-secondary">All tasks</a>
             </div>
-            <a href="{{ url_for('tasks.add_task') }}" class="btn btn-primary" id="new_task">New task</a>
+            <a
+                class="btn btn-primary"
+                data-toggle="modal"
+                data-target="#AddTaskModal"
+                >Add Task</a
+            >
         </div>
         <div class="cards" id="tasks">
             {% for item in tasks %}
-                <div class="card text-center" style="width: 18rem">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{ item.title }} - {% if item.done %} Done! {% else %}
-                            In progress {% endif %}
-                        </h5>
-                        <p class="card-text">Priority: {{ item.priority }}</p>
-                        <div>
-                            <a href="/tasks/{{ item.id }}" class="btn btn-info">Edit</a>
-                            <a href="/tasks_delete/{{ item.id }}" class="btn btn-danger">Delete</a>
-                        </div>
+            <div class="card text-center" style="width: 18rem">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ item.title }} - {% if item.done %} Done! {% else %}
+                        In progress {% endif %}
+                    </h5>
+                    <p class="card-text">Priority: {{ item.priority }}</p>
+                    <div>
+                        {% if item.done %}
+                        <input
+                            type="checkbox"
+                            class="btn-check"
+                            id="btn-check-outlined"
+                            autocomplete="off"
+                            checked
+                        />
+                        {% else %}
+                        <input
+                            type="checkbox"
+                            class="btn-check"
+                            id="btn-check-outlined"
+                            autocomplete="off"
+                        />
+                        {% endif %}
+                        <label
+                            class="btn btn-outline-primary"
+                            for="btn-check-outlined"
+                            >Done</label
+                        >
+                        <a href="/tasks/{{ item.id }}" class="btn btn-info"
+                            >Edit</a
+                        >
+                        <a
+                            href="/tasks_delete/{{ item.id }}"
+                            class="btn btn-danger"
+                            >Delete</a
+                        >
                     </div>
                 </div>
+            </div>
             {% endfor %}
         </div>
     </div>
 </main>
-
-{% endblock content %}
-{% block script %}
-<script>
-    let condition = {true: "Done!", false: "In progress"};
-
-    function createTaskPattern(data) {
-        var pattern = [
-        '<div class="card text-center" style="width: 18rem">',
-            '<div class="card-body">',
-                '<h5 class="card-title">',
-                data["title"], ' - ', condition[data["done"]],
-                '</h5>',
-                '<p class="card-text">Priority:',
-                data["priority"],
-                '</p>',
-                '<div>',
-                    '<a href="/tasks/',
-                    data["id"],
-                    '" class="btn btn-info">Edit</a>',
-                    '<a href="/tasks_delete/',
-                    data["id"],
-                    '" class="btn btn-danger">Delete</a>',
-                '</div>',
-            '</div>',
-        '</div>'
-        ];
-
-        return pattern.join('');
-    }
-
-    function ready(fn) {
-        if (document.readyState != 'loading'){
-            fn();
-        } else {
-            document.addEventListener('DOMContentLoaded', fn);
-        }
-    }
-
-    function fetchData(text) {
-        let tasks = document.querySelector("#tasks");
-
-        fetch("{{ url_for('tasks.search_request') }}", {
-            method: 'POST',
-            body: JSON.stringify(text),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(function(response) {
-            if (!response.ok) {
-                throw Error(response.statusText);
-            }
-
-            response.json().then(function(data) {
-                let pattern, nodes = "";
-
-                data.forEach(element => {
-                    pattern = createTaskPattern(element);
-                    nodes += pattern;
-                });
-
-                tasks.innerHTML = nodes;
-            });
-        }).catch(function(error) {
-            tasks.innerHTML = "Failed to load";
-        })
-    }
-
-    ready(() => {
-        document.querySelector('#finder').addEventListener('input', event => {
-            let text = {search: document.querySelector('#finder').value};
-
-            fetchData(text);
-        });
-    });
-</script>
+{% endblock content %} {% block script %}
 {% endblock script %}

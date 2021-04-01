@@ -92,7 +92,7 @@ def upcoming_tasks():
 
     # Для того, чтобы правильно вывести задачи в таблицу посмотри циклы в templates/upcoming_tasks.html
     # Скорее всего придется делать новый template для правильного отображения
-    return render_template('index.html', title="Upcoming Tasks", tasks=tasks) # tasks заменить на data
+    return render_template('upcoming_tasks.html', title="Upcoming Tasks", tasks=data) # tasks заменить на data
 
 
 @users.route("/dashboard", methods=["GET"])
