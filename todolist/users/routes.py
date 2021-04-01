@@ -69,7 +69,7 @@ def tasks():
     # и дата которых совпадает с сегодняшним днем, 
     # отсортированные по приоритету и алфавиту
     tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
-                                        Task.scheduled_date == datetime.now().date()).order_by(Task.priority, Task.title).all()
+                                       Task.scheduled_date == datetime.now().date(), Task.done == 0).order_by(Task.priority, Task.title).all()
 
     return render_template("index.html", title="Today's Tasks", tasks=tasks)
 
@@ -83,7 +83,8 @@ def upcoming_tasks():
     db_sess = db_session.create_session()
     # Запрашиваем все задачи, добавленный этим пользователем, 
     # отсортированные по приоритетности, алфавиту и дате
-    tasks = db_sess.query(Task).filter(Task.user_id == current_user.id).order_by(Task.scheduled_date, Task.priority, Task.title).all()
+    tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, Task.done == 0).\
+                               order_by(Task.scheduled_date, Task.priority, Task.title).all()
 
     # Группируем задачи по дате
     data = {}

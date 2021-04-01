@@ -12,17 +12,19 @@ tasks = Blueprint("tasks", __name__)
 @login_required
 def search_request():
     db_sess = db_session.create_session()
-    searchbox = request.get_json().get("search") # Получаем содержимое строки поиска
+    searchbox = request.get_json() # Получаем содержимое строки поиска
 
     if session["url"] == url_for("users.tasks"):
         # Запрашиваем задачи, название которых входит в поисковую строку
         tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
                                            Task.scheduled_date == datetime.now().date(),
-                                           Task.title.like(f"%{searchbox}%")).order_by(Task.priority, Task.title).all()
+                                           Task.title.like(f"%{searchbox}%"),
+                                           Task.done == 0).order_by(Task.priority, Task.title).all()
     elif session["url"] == url_for("users.upcoming_tasks"): # Изменить после создании upcoming_tasks.html
         # Запрашиваем задачи, название которых входит в поисковую строку
         tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, 
-                                           Task.title.like(f"%{searchbox}%")).order_by(Task.scheduled_date, Task.priority, Task.title).all()
+                                           Task.title.like(f"%{searchbox}%"),
+                                           Task.done == 0).order_by(Task.scheduled_date, Task.priority, Task.title).all()
     result = []
     for task in tasks:
         schema = TaskSchema() # Создаем схему
@@ -30,6 +32,39 @@ def search_request():
         result.append(json_result)
 
     return make_response(jsonify(result), 200)
+
+
+@tasks.route("/complete_task", methods=["POST"])
+@login_required
+def complete_task():
+    task_id = int(request.get_json()) # Получаем id, выполненной задачи
+
+    db_sess = db_session.create_session()
+    task = db_sess.query(Task).filter(Task.id == task_id, Task.user_id == current_user.id).first()
+
+    if task: # Отмечаем задачу завершенной
+        task.done = True
+        task.completed_date = datetime.now().date()
+        db_sess.commit()
+
+    # Запрашиваем из базы данных задачи, в соответствии с текущей страницей
+    if session["url"] == url_for("users.tasks"):
+        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
+                                           Task.scheduled_date == datetime.now().date(),
+                                           Task.done == 0).order_by(Task.priority, Task.title).all()
+    elif session["url"] == url_for("users.upcoming_tasks"):
+        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
+                                           Task.done == 0).order_by(Task.scheduled_date, Task.priority, Task.title).all()
+
+    result = []
+    for task in tasks:
+        schema = TaskSchema() # Создаем схему
+        json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
+        result.append(json_result)
+
+    flash("Task completed!", "info")
+    return make_response(jsonify(result), 200)
+
 
 @tasks.route('/add_task',  methods=['GET', 'POST'])
 @login_required
@@ -66,7 +101,6 @@ def edit_task(task_id):
             form.title.data = tasks.title
             form.priority.data = tasks.priority
             form.scheduled_date.data = tasks.scheduled_date
-            form.done.data = tasks.done
         else:
             abort(404)
 
@@ -79,12 +113,6 @@ def edit_task(task_id):
             tasks.title = form.title.data.strip()
             tasks.priority = form.priority.data
             tasks.scheduled_date = form.scheduled_date.data
-            tasks.done = form.done.data
-
-            if tasks.done:
-                tasks.completed_date = datetime.now().date()
-            else: # Скорее всего в дальнейшем не понадобится
-                tasks.completed_date = None
 
             db_sess.commit()
             flash("Task has been successfully edited!", "info")
