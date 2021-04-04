@@ -89,7 +89,7 @@ def upcoming_tasks():
     # Группируем задачи по дате
     data = {}
     for key, group in groupby(tasks, key=lambda x: x.scheduled_date):
-        data[key] = [thing for thing in group]
+        data[key.strftime("%d.%m.%Y")] = [thing for thing in group]
 
     # Для того, чтобы правильно вывести задачи в таблицу посмотри циклы в templates/upcoming_tasks.html
     # Скорее всего придется делать новый template для правильного отображения

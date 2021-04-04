@@ -3,7 +3,7 @@
     <div style="margin-top: 8em;">
         <h1>{{ current_user.name }}</h1>
         <h4>
-            With us since {{ current_user.created_date.strftime("%Y-%m-%d") }}
+            With us since {{ current_user.created_date.strftime("%d.%m.%Y") }}
         </h3>
         <h3 class="display-6"><b>{{ completed }}</b> completed tasks</h3>
         <br>

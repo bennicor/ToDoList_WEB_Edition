@@ -4,6 +4,8 @@ from datetime import datetime
 from todolist import db_session
 from .forms import TaskForm
 from todolist.models import Task, TaskSchema
+from itertools import groupby
+
 
 tasks = Blueprint("tasks", __name__)
 
@@ -20,18 +22,25 @@ def search_request():
                                            Task.scheduled_date == datetime.now().date(),
                                            Task.title.like(f"%{searchbox}%"),
                                            Task.done == 0).order_by(Task.priority, Task.title).all()
-    elif session["url"] == url_for("users.upcoming_tasks"): # Изменить после создании upcoming_tasks.html
+        result = []
+        for task in tasks:
+            schema = TaskSchema() # Создаем схему
+            json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
+            result.append(json_result)
+
+        return make_response(jsonify(result), 200)
+    elif session["url"] == url_for("users.upcoming_tasks"):
         # Запрашиваем задачи, название которых входит в поисковую строку
         tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, 
                                            Task.title.like(f"%{searchbox}%"),
                                            Task.done == 0).order_by(Task.scheduled_date, Task.priority, Task.title).all()
-    result = []
-    for task in tasks:
-        schema = TaskSchema() # Создаем схему
-        json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
-        result.append(json_result)
 
-    return make_response(jsonify(result), 200)
+        # Группируем задачи по дате
+        data = {}
+        for key, group in groupby(tasks, key=lambda x: x.scheduled_date):
+            data[str(key)] = [TaskSchema().dump(thing) for thing in group]
+
+        return make_response(jsonify(data), 200)
 
 
 @tasks.route("/complete_task", methods=["POST"])
@@ -52,18 +61,26 @@ def complete_task():
         tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
                                            Task.scheduled_date == datetime.now().date(),
                                            Task.done == 0).order_by(Task.priority, Task.title).all()
+
+        result = []
+        for task in tasks:
+            schema = TaskSchema() # Создаем схему
+            json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
+            result.append(json_result)
+
+        return make_response(jsonify(result), 200)
     elif session["url"] == url_for("users.upcoming_tasks"):
-        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
+        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, 
                                            Task.done == 0).order_by(Task.scheduled_date, Task.priority, Task.title).all()
 
-    result = []
-    for task in tasks:
-        schema = TaskSchema() # Создаем схему
-        json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
-        result.append(json_result)
+        # Группируем задачи по дате
+        data = {}
+        for key, group in groupby(tasks, key=lambda x: x.scheduled_date):
+            data[str(key)] = [TaskSchema().dump(thing) for thing in group]
+
+        return make_response(jsonify(data), 200)
 
     flash("Task completed!", "info")
-    return make_response(jsonify(result), 200)
 
 
 @tasks.route('/add_task',  methods=['GET', 'POST'])
