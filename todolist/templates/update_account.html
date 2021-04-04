@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main>
+    <div style="margin-top: 8em;">
+        <form action="" method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.name(class="form-control") }}<br>
+                {% for error in form.name.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.image_file.label }}<br>
+                {{ form.image_file(class="form-control") }}<br>
+                {% for error in form.image_file.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.email.label }}<br>
+                {{ form.email(class="form-control", type="email") }}<br>
+                {% for error in form.email.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <div id="buttons_container">
+                <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

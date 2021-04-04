@@ -4,9 +4,11 @@ from datetime import datetime, timedelta
 from todolist.models import User, Task
 from itertools import groupby
 from todolist.helpers import weekdays
-from todolist.users.forms import RegistrationForm, LoginForm
+from todolist.users.forms import RegistrationForm, LoginForm, UpdateAccountForm
 from todolist import db_session
 from sqlalchemy import func
+from todolist.helpers import save_picture
+
 
 users = Blueprint('users', __name__)
 
@@ -21,7 +23,14 @@ def register():
     if form.validate_on_submit():
         db_sess = db_session.create_session()
 
-        user = User(name=form.name.data, email=form.email.data)
+        # Если пользователь не загрузил собственную фотографию
+        # Выбирается фотография по умолчанию
+        if form.image_file.data:
+            picture_file = save_picture(form.image_file.data)
+        else:
+            picture_file = "default.jpg"
+
+        user = User(name=form.name.data, email=form.email.data, image_file=picture_file)
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
@@ -89,7 +98,7 @@ def upcoming_tasks():
     # Группируем задачи по дате
     data = {}
     for key, group in groupby(tasks, key=lambda x: x.scheduled_date):
-        data[key] = [thing for thing in group]
+        data[key.strftime("%d.%m.%Y")] = [thing for thing in group]
 
     # Для того, чтобы правильно вывести задачи в таблицу посмотри циклы в templates/upcoming_tasks.html
     # Скорее всего придется делать новый template для правильного отображения
@@ -120,5 +129,37 @@ def dashboard():
 
     # Запрашиваем завершенные задачи за все время
     completed_tasks = db_sess.query(func.count(Task.id)).filter(Task.user_id == current_user.id, Task.done == 1).first()[0]
+    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
 
-    return render_template('dashboard.html', title="Dashboard", tasks=data, completed=completed_tasks)
+    return render_template('dashboard.html', title="Dashboard", tasks=data, completed=completed_tasks, image_file=image_file)
+
+
+@users.route("/update_account", methods=["GET", "POST"])
+@login_required
+def update_account():
+    form = UpdateAccountForm()
+
+    # Если пользователь получает данные, то заполняем форму текующими данными о профиле
+    if request.method == "GET":
+        form.name.data = current_user.name
+        form.email.data = current_user.email
+
+    # Если форма готова к отправке, обновляем информацию на более актульную
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+
+        # Если пользователь заменил фотографию - меняем ее
+        if form.image_file.data:
+            picture = save_picture(form.image_file.data)
+            user.image_file = picture
+
+        user.name = form.name.data.strip()
+        user.email = form.email.data.strip()
+
+        db_sess.commit()
+        flash("Account info has been successfully changed!", "info")
+        return redirect(url_for("users.dashboard")) # Перенаправляет на странице профиля
+    image_file = url_for('static', filename='profile_pics/' + current_user.image_file) # Получаем путь к фотографии пользователя
+
+    return render_template('update_account.html', title='Edit Account Info', form=form)

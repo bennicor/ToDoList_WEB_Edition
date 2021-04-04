@@ -32,17 +32,10 @@
                             name="{{ item.id }}"
                             onclick="completeTask(this.name)"
                         />
-                        <a href="/tasks/{{ item.id }}" class="btn btn-info"
-                            >Edit</a
-                        >
-                        <a
-                            href="/tasks_delete/{{ item.id }}"
-                            class="btn btn-danger"
-                            >Delete</a
-                        >
+                        <a href="{{ url_for('tasks.edit_task', task_id=item.id) }}" class="btn btn-info">Edit</a>
+                        <a href="{{ url_for('tasks.delete_task', task_id=item.id) }}" class="btn btn-danger">Delete</a>
                     </div>
                 </div>
-            </div>
             {% endfor %}
         </div>
     </div>
@@ -71,25 +64,25 @@
         var pattern = [
             '<div class="card text-center" style="width: 18rem">',
             '<div class="card-body">',
-            '<h5 class="card-title">',
-            data["title"],
-            "</h5>",
-            '<p class="card-text">Priority: <a class="priority">',
-            data["priority"],
-            "</a></p>",
-            '<div class="card_buttons">',
-            '<input type="checkbox" id="completed" name="',
-            data["id"],
-            '" onclick="completeTask(this.name)">',
-            '<a href="/tasks/',
-            data["id"],
-            '" class="btn btn-info">Edit</a>',
-            '<a href="/tasks_delete/',
-            data["id"],
-            '" class="btn btn-danger">Delete</a>',
-            "</div>",
-            "</div>",
-            "</div>",
+                '<h5 class="card-title">',
+                data["title"],
+                '</h5>',
+                '<p class="card-text">Priority: ',
+                data["priority"],
+                '</p>',
+                '<div>',
+                    '<input type="checkbox" id="completed" name="',
+                    data["id"],
+                    '" onclick="completeTask(this.name)">',
+                    '<a href="/tasks/',
+                    data["id"],
+                    '" class="btn btn-info">Edit</a>',
+                    '<a href="/tasks_delete/',
+                    data["id"],
+                    '" class="btn btn-danger">Delete</a>',
+                '</div>',
+            '</div>',
+        '</div>'
         ];
         return pattern.join("");
     }
@@ -135,7 +128,10 @@
     document.getElementById("finder").oninput = function () {
         const textToFind = this.value.trim();
 
-        fetchData(textToFind, '{{ url_for("tasks.search_request") }}');
+        // Поиск начнется только если в строке есть символы
+        if (textToFind.match(/^[a-z0-9]*$/i)) {
+            fetchData(textToFind, '{{ url_for("tasks.search_request") }}');
+        }
     };
 
     // Task completion implementation
