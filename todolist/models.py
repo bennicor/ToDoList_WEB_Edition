@@ -42,6 +42,7 @@ class User(SqlAlchemyBase, UserMixin):
     name = Column(String, nullable=True)
     email = Column(String, index=True, unique=True, nullable=True)
     hashed_password = Column(String, nullable=True)
+    image_file = Column(String, nullable=True)
     created_date = Column(DateTime, default=datetime.datetime.now)
     tasks = relation("Task", back_populates='user')
     

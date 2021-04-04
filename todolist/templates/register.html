@@ -13,8 +13,26 @@
     </head>
     <main>
         <h1 style="text-align: center;">Registration</h1>
-        <form action="" method="post">
+        <form action="" method="post" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
+            <p>
+                {{ form.name.label }}<br>
+                {{ form.name(class="form-control") }}<br>
+                {% for error in form.name.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.image_file.label }}<br>
+                {{ form.image_file(class="form-control") }}<br>
+                {% for error in form.image_file.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </p>
             <p>
                 {{ form.email.label }}<br>
                 {{ form.email(class="form-control", type="email") }}<br>
@@ -37,15 +55,6 @@
                 {{ form.confirm_password.label }}<br>
                 {{ form.confirm_password(class="form-control", type="password") }}<br>
                 {% for error in form.confirm_password.errors %}
-                    <p class="alert alert-danger" role="alert">
-                        {{ error }}
-                    </p>
-                {% endfor %}
-            </p>
-            <p>
-                {{ form.name.label }}<br>
-                {{ form.name(class="form-control") }}<br>
-                {% for error in form.name.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}
                     </p>
