@@ -139,9 +139,12 @@
 
     // При вводе в поисковое поле вызываем функцию fetchSearch
     document.getElementById('finder').oninput = function () {
-        const textToFind = this.value.trim();
+        const textToFind = this.value;
 
-        fetchData(textToFind, '{{ url_for("tasks.search_request") }}')
+        // Поиск начнется только если в строке есть символы
+        if (textToFind.match(/^[a-z0-9]*$/i)) {
+            fetchData(textToFind, '{{ url_for("tasks.search_request") }}');
+        }
     };
 
     // Task completion implementation
@@ -151,7 +154,7 @@
 
         // Проверяем если checkbox активен
         if (checkbox) {
-            fetchData(id, '{{ url_for("tasks.complete_task") }}')
+            fetchData(id, '{{ url_for("tasks.complete_task") }}');
         }
     };
 
