@@ -15,66 +15,70 @@
     </head>
     <body>
         <header class="header">
-            <div class="header_nav">
-                <a class="header_logo" href="{{ url_for('main.index') }}">ToDoList!</a>
-            </div>
-
-            <input
-                type="search"
-                name="finder"
-                id="finder"
-                class="finder"
-                placeholder="Find task"
-            />
-
-            {% if current_user.is_authenticated %}
+            <div class="container">
                 <div class="header_nav">
-                    {% set image_file = url_for('static', filename='profile_pics/' + current_user.image_file) %}
-                    <a href="{{ url_for("users.dashboard") }}" class="username">{{ current_user.name.capitalize() }}
-                    <img class="rounded-circle account-img" src="{{ image_file }}" width="50" height="50"></a>
+                    <a class="header_logo" href="{{ url_for('main.index') }}">ToDoList!</a>
                 </div>
-            {% endif %}
+
+                <input
+                    type="search"
+                    name="finder"
+                    id="finder"
+                    class="finder"
+                    placeholder="Find task"
+                />
+
+                {% if current_user.is_authenticated %}
+                    <div class="header_nav">
+                        {% set image_file = url_for('static', filename='profile_pics/' + current_user.image_file) %}
+                        <a href="{{ url_for("users.dashboard") }}" class="username">{{ current_user.name.capitalize() }}
+                        <img class="rounded-circle account-img" src="{{ image_file }}" width="50" height="50"></a>
+                    </div>
+                {% endif %}
+            </div>
         </header>
 
         <div class="side_bar">
-            <div class="sidebar_section">
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Main_page.png"
-                        class="icon"
-                    />
-                    <a href="{{ url_for("users.tasks") }}">Main page</a>
+            <div class="row">
+                <div class="sidebar_section">
+                    <div class="sidebar_item">
+                        <img
+                            src="/static/img/icons/Main_page.png"
+                            class="icon"
+                        />
+                        <a href="{{ url_for("users.tasks") }}">Main page</a>
+                    </div>
+                    <div class="sidebar_item">
+                        <img
+                            src="/static/img/icons/Statistics.png"
+                            class="icon"
+                        />
+                        <a href="{{ url_for("users.dashboard") }}">Statistics</a>
+                    </div>
+                    <div class="sidebar_item">
+                        <img
+                            src="/static/img/icons/Projects.png"
+                            class="icon"
+                        />
+                        <a href="#">Projects</a>
+                    </div>
                 </div>
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Statistics.png"
-                        class="icon"
-                    />
-                    <a href="{{ url_for("users.dashboard") }}">Statistics</a>
-                </div>
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Projects.png"
-                        class="icon"
-                    />
-                    <a href="#">Projects</a>
-                </div>
-            </div>
 
-            <div class="sidebar_section">
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Settings.png"
-                        class="icon"
-                    />
-                    <a href="#">Settings</a>
-                </div>
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Logout.png"
-                        class="icon"
-                    />
-                    <a href="{{ url_for("users.logout") }}">Logout</a>
+                <div class="sidebar_section">
+                    <div class="sidebar_item">
+                        <img
+                            src="/static/img/icons/Settings.png"
+                            class="icon"
+                        />
+                        <a href="#">Settings</a>
+                    </div>
+                    <div class="sidebar_item">
+                        <img
+                            src="/static/img/icons/Logout.png"
+                            class="icon"
+                        />
+                        <a href="{{ url_for("users.logout") }}">Logout</a>
+                    </div>
                 </div>
             </div>
         </div>

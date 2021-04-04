@@ -1,5 +1,5 @@
 function PriorityColor() {
-    var priority = document.querySelectorAll("priority");
+    var priority = document.querySelectorAll(".priority");
     for (let i = 0; i < priority.length; i++) {
         console.log(Number(priority[i].innerHTML));
         if (Number(priority[i].innerHTML) == 1) {

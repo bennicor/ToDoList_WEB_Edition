@@ -2,7 +2,9 @@
 <main>
     <div style="margin-top: 8em">
         <h1 style="text-align: center">Upcoming Tasks</h1>
-        <a href="{{ url_for('users.tasks') }}" class="btn btn-primary">Today's Tasks</a>
+        <a href="{{ url_for('users.tasks') }}" class="btn btn-primary"
+            >Today's Tasks</a
+        >
         <a
             class="btn btn-primary"
             data-toggle="modal"
@@ -14,85 +16,106 @@
             <h1 style="text-align: center">{{ key }}</h1>
             <div class="cards">
                 {% for item in val %}
-                    <div class="card text-center" style="width: 18rem">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {{ item.title }}
-                            </h5>
-                            <p class="card-text">Priority: {{ item.priority }}</p>
-                            <div>
-                                {% if item.done %}
-                                <button
-                                    type="button"
-                                    class="btn btn-primary active"
-                                    data-toggle="button"
-                                    autocomplete="off"
-                                    aria-pressed="true"
-                                >
-                                    Done
-                                </button>
-                                {% else %}
-                                <button
-                                    type="button"
-                                    class="btn btn-primary"
-                                    data-toggle="button"
-                                    autocomplete="off"
-                                >
-                                    Done
-                                </button>
-                                {% endif %}
-                                <a href="{{ url_for('tasks.edit_task', task_id=item.id) }}" class="btn btn-info">Edit</a>
-                                <a href="{{ url_for('tasks.delete_task', task_id=item.id) }}" class="btn btn-danger">Delete</a>
-                            </div>
+                <div class="card text-center" style="width: 18rem">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.title }}</h5>
+                        <p class="card-text">Priority: {{ item.priority }}</p>
+                        <div>
+                            {% if item.done %}
+                            <button
+                                type="button"
+                                class="btn btn-primary active"
+                                data-toggle="button"
+                                autocomplete="off"
+                                aria-pressed="true"
+                            >
+                                Done
+                            </button>
+                            {% else %}
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                data-toggle="button"
+                                autocomplete="off"
+                            >
+                                Done
+                            </button>
+                            {% endif %}
+                            <a
+                                href="{{ url_for('tasks.edit_task', task_id=item.id) }}"
+                                class="btn btn-info"
+                                >Edit</a
+                            >
+                            <a
+                                href="{{ url_for('tasks.delete_task', task_id=item.id) }}"
+                                class="btn btn-danger"
+                                >Delete</a
+                            >
                         </div>
                     </div>
+                </div>
                 {% endfor %}
             </div>
-        {% endfor %}
+            {% endfor %}
         </div>
     </div>
 </main>
-{% endblock %}
-{% block script %}
+{% endblock %} {% block script %}
 <script>
+    function PriorityColor() {
+        var priority = document.querySelectorAll(".priority");
+        for (let i = 0; i < priority.length; i++) {
+            console.log(Number(priority[i].innerHTML));
+            if (Number(priority[i].innerHTML) == 1) {
+                priority[i].style.backgroundColor = "red";
+            } else if (Number(priority[i].innerHTML) == 2) {
+                priority[i].style.backgroundColor = "yellow";
+            } else if (Number(priority[i].innerHTML) == 3) {
+                priority[i].style.backgroundColor = "blue";
+            } else if (Number(priority[i].innerHTML) == 4) {
+                priority[i].style.backgroundColor = "green";
+            }
+        }
+    }
+    PriorityColor();
     // Создаем HTML pattern для элемента, который будет отображаться
     function createTaskPattern(data) {
         var pattern = [
-        '<div class="card text-center" style="width: 18rem">',
+            '<div class="card text-center" style="width: 18rem">',
             '<div class="card-body">',
-                '<h5 class="card-title">',
-                data["title"],
-                '</h5>',
-                '<p class="card-text">Priority: ',
-                data["priority"],
-                '</p>',
-                '<div>',
-                    '<input type="checkbox" id="completed" name="',
-                    data["id"],
-                    '" onclick="completeTask(this.name)">',
-                    '<a href="/tasks/',
-                    data["id"],
-                    '" class="btn btn-info">Edit</a>',
-                    '<a href="/tasks_delete/',
-                    data["id"],
-                    '" class="btn btn-danger">Delete</a>',
-                '</div>',
-            '</div>',
-        '</div>'
+            '<h5 class="card-title">',
+            data["title"],
+            "</h5>",
+            '<p class="card-text">Priority: <a class="priority">',
+            data["priority"],
+            "</a></p>",
+            "<div>",
+            '<input type="checkbox" id="completed" name="',
+            data["id"],
+            '" onclick="completeTask(this.name)">',
+            '<a href="/tasks/',
+            data["id"],
+            '" class="btn btn-info">Edit</a>',
+            '<a href="/tasks_delete/',
+            data["id"],
+            '" class="btn btn-danger">Delete</a>',
+            "</div>",
+            "</div>",
+            "</div>",
         ];
 
-        return pattern.join('');
+        return pattern.join("");
     }
 
     function createTaskDatePattern(date) {
         var pattern = [
-        '<h1 style="text-align: center">',
-        date,
-        '</h1>',
-        '<div class="cards">'
+            '<h1 style="text-align: center">',
+            date,
+            "</h1>",
+            '<div class="cards">',
         ];
 
-        return pattern.join('');
+        return pattern.join("");
     }
 
     // Search Implementation
@@ -103,42 +126,48 @@
         const tasks = document.querySelector("#tasks");
 
         fetch(url, {
-            method: 'POST',
+            method: "POST",
             body: JSON.stringify(text),
             headers: {
-                'Content-Type': 'application/json'
-            }
+                "Content-Type": "application/json",
+            },
         })
-        .then(function(response) {
-            if (!response.ok) {
-                throw Error(response.statusText);
-            }
-
-            response.json().then(function(data) {
-                let date, pattern, nodes = "";
-
-                for (var key in data) {
-                    formatedDate = new Date(key).toLocaleDateString("ru-RU");
-                    date = createTaskDatePattern(formatedDate);
-                    nodes += date;
-
-                    for (const [key1, value] of Object.entries(data[key])) {
-                        pattern = createTaskPattern(value);
-                        nodes += pattern;
-                    }
-
-                    nodes += "</div>";
+            .then(function (response) {
+                if (!response.ok) {
+                    throw Error(response.statusText);
                 }
 
-                tasks.innerHTML = nodes;
+                response.json().then(function (data) {
+                    let date,
+                        pattern,
+                        nodes = "";
+
+                    for (var key in data) {
+                        formatedDate = new Date(key).toLocaleDateString(
+                            "ru-RU"
+                        );
+                        date = createTaskDatePattern(formatedDate);
+                        nodes += date;
+
+                        for (const [key1, value] of Object.entries(data[key])) {
+                            pattern = createTaskPattern(value);
+                            nodes += pattern;
+                        }
+
+                        nodes += "</div>";
+                    }
+
+                    tasks.innerHTML = nodes;
+                });
+            })
+            .catch(function (error) {
+                tasks.innerHTML = "Failed to load";
             });
-        }).catch(function(error) {
-            tasks.innerHTML = "Failed to load";
-        })
+            PriorityColor();
     }
 
     // При вводе в поисковое поле вызываем функцию fetchSearch
-    document.getElementById('finder').oninput = function () {
+    document.getElementById("finder").oninput = function () {
         const textToFind = this.value;
 
         // Поиск начнется только если в строке есть символы
@@ -149,14 +178,13 @@
 
     // Task completion implementation
     // id передается при нажатии на конкретный checkbox
-    function completeTask (id) {
+    function completeTask(id) {
         const checkbox = document.getElementsByName(id)[0].checked;
 
         // Проверяем если checkbox активен
         if (checkbox) {
             fetchData(id, '{{ url_for("tasks.complete_task") }}');
         }
-    };
-
+    }
 </script>
 {% endblock %}

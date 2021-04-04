@@ -32,10 +32,20 @@
                             name="{{ item.id }}"
                             onclick="completeTask(this.name)"
                         />
-                        <a href="{{ url_for('tasks.edit_task', task_id=item.id) }}" class="btn btn-info">Edit</a>
-                        <a href="{{ url_for('tasks.delete_task', task_id=item.id) }}" class="btn btn-danger">Delete</a>
+                        <a
+                            data-toggle="modal"
+                            data-target="#AddTaskModal"
+                            class="btn btn-info"
+                            >Edit</a
+                        >
+                        <a
+                            href="{{ url_for('tasks.delete_task', task_id=item.id) }}"
+                            class="btn btn-danger"
+                            >Delete</a
+                        >
                     </div>
                 </div>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -44,17 +54,18 @@
 {% endblock content %} {% block script %}
 <script>
     function PriorityColor() {
-        var priority = document.querySelectorAll("priority");
+        var priority = document.querySelectorAll(".priority");
+        var card = document.querySelectorAll(".card");
         for (let i = 0; i < priority.length; i++) {
-            console.log(Number(priority[i].innerHTML))
+            console.log(Number(priority[i].innerHTML));
             if (Number(priority[i].innerHTML) == 1) {
-                priority[i].style.backgroundColor = prompt('background color?', 'red');
+                card[i].style.backgroundColor = "#f16a6a";
             } else if (Number(priority[i].innerHTML) == 2) {
-                priority[i].style.backgroundColor = prompt('background color?', 'yellow');
+                card[i].style.backgroundColor = "#f5f25d";
             } else if (Number(priority[i].innerHTML) == 3) {
-                priority[i].style.backgroundColor = prompt('background color?', 'blue');
+                card[i].style.backgroundColor = "#5dd2f5";
             } else if (Number(priority[i].innerHTML) == 4) {
-                priority[i].style.backgroundColor = prompt('background color?', 'green');
+                card[i].style.backgroundColor = "#6af55d";
             }
         }
     }
@@ -64,25 +75,25 @@
         var pattern = [
             '<div class="card text-center" style="width: 18rem">',
             '<div class="card-body">',
-                '<h5 class="card-title">',
-                data["title"],
-                '</h5>',
-                '<p class="card-text">Priority: ',
-                data["priority"],
-                '</p>',
-                '<div>',
-                    '<input type="checkbox" id="completed" name="',
-                    data["id"],
-                    '" onclick="completeTask(this.name)">',
-                    '<a href="/tasks/',
-                    data["id"],
-                    '" class="btn btn-info">Edit</a>',
-                    '<a href="/tasks_delete/',
-                    data["id"],
-                    '" class="btn btn-danger">Delete</a>',
-                '</div>',
-            '</div>',
-        '</div>'
+            '<h5 class="card-title">',
+            data["title"],
+            "</h5>",
+            '<p class="card-text">Priority: <a class="priority">',
+            data["priority"],
+            "</a></p>",
+            "<div>",
+            '<input type="checkbox" id="completed" name="',
+            data["id"],
+            '" onclick="completeTask(this.name)">',
+            '<a href="/tasks/',
+            data["id"],
+            '" class="btn btn-info">Edit</a>',
+            '<a href="/tasks_delete/',
+            data["id"],
+            '" class="btn btn-danger">Delete</a>',
+            "</div>",
+            "</div>",
+            "</div>",
         ];
         return pattern.join("");
     }
@@ -117,11 +128,11 @@
 
                     tasks.innerHTML = nodes;
                 });
-                PriorityColor();
             })
             .catch(function (error) {
                 tasks.innerHTML = "Failed to load";
             });
+            PriorityColor();
     }
 
     // При вводе в поисковое поле вызываем функцию fetchSearch
