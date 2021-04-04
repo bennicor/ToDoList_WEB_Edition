@@ -1,18 +1,46 @@
-let condition = { true: "Done!", false: "In progress" };
-
+function PriorityColor() {
+    var priority = document.querySelectorAll("priority");
+    for (let i = 0; i < priority.length; i++) {
+        console.log(Number(priority[i].innerHTML));
+        if (Number(priority[i].innerHTML) == 1) {
+            priority[i].style.backgroundColor = prompt(
+                "background color?",
+                "red"
+            );
+        } else if (Number(priority[i].innerHTML) == 2) {
+            priority[i].style.backgroundColor = prompt(
+                "background color?",
+                "yellow"
+            );
+        } else if (Number(priority[i].innerHTML) == 3) {
+            priority[i].style.backgroundColor = prompt(
+                "background color?",
+                "blue"
+            );
+        } else if (Number(priority[i].innerHTML) == 4) {
+            priority[i].style.backgroundColor = prompt(
+                "background color?",
+                "green"
+            );
+        }
+    }
+}
+PriorityColor();
+// Создаем HTML pattern для элемента, который будет отображаться
 function createTaskPattern(data) {
     var pattern = [
         '<div class="card text-center" style="width: 18rem">',
         '<div class="card-body">',
         '<h5 class="card-title">',
         data["title"],
-        " - ",
-        condition[data["done"]],
         "</h5>",
-        '<p class="card-text">Priority:',
+        '<p class="card-text">Priority: <a class="priority">',
         data["priority"],
-        "</p>",
-        "<div>",
+        "</a></p>",
+        '<div class="card_buttons">',
+        '<input type="checkbox" id="completed" name="',
+        data["id"],
+        '" onclick="completeTask(this.name)">',
         '<a href="/tasks/',
         data["id"],
         '" class="btn btn-info">Edit</a>',
@@ -23,22 +51,17 @@ function createTaskPattern(data) {
         "</div>",
         "</div>",
     ];
-
     return pattern.join("");
 }
 
-function ready(fn) {
-    if (document.readyState != "loading") {
-        fn();
-    } else {
-        document.addEventListener("DOMContentLoaded", fn);
-    }
-}
+// Search Implementation
+// Отправляем HTTP запрос в python функцию
+// и получаем оттуда информацию из базы данных
+// В теле запроса передаем содержимое поисковой строки
+function fetchData(text, url) {
+    const tasks = document.querySelector("#tasks");
 
-function fetchData(text) {
-    let tasks = document.querySelector("#tasks");
-
-    fetch("{{ url_for('tasks.search_request') }}", {
+    fetch(url, {
         method: "POST",
         body: JSON.stringify(text),
         headers: {
@@ -61,16 +84,27 @@ function fetchData(text) {
 
                 tasks.innerHTML = nodes;
             });
+            PriorityColor();
         })
         .catch(function (error) {
             tasks.innerHTML = "Failed to load";
         });
 }
 
-ready(() => {
-    document.querySelector("#finder").addEventListener("input", (event) => {
-        let text = { search: document.querySelector("#finder").value };
+// При вводе в поисковое поле вызываем функцию fetchSearch
+document.getElementById("finder").oninput = function () {
+    const textToFind = this.value.trim();
 
-        fetchData(text);
-    });
-});
+    fetchData(textToFind, '{{ url_for("tasks.search_request") }}');
+};
+
+// Task completion implementation
+// id передается при нажатии на конкретный checkbox
+function completeTask(id) {
+    const checkbox = document.getElementsByName(id)[0].checked;
+
+    // Проверяем если checkbox активен
+    if (checkbox) {
+        fetchData(id, '{{ url_for("tasks.complete_task") }}');
+    }
+}

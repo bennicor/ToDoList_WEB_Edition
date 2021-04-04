@@ -17,7 +17,7 @@ a:hover {
 /*  Header  */
 
 header {
-    z-index:2;
+    z-index: 2;
     position: fixed;
     text-align: justify;
     letter-spacing: 1px;
@@ -75,7 +75,7 @@ header::after {
 /*  SideBar  */
 
 .side_bar {
-    z-index:1;
+    z-index: 1;
     position: fixed;
     margin-top: 8em;
     margin-left: 1px;
@@ -113,7 +113,6 @@ header::after {
     transform: scale(1.1);
 }
 
-
 .sidebar_item {
     transition: all 0.3s;
     transform: scale(1);
@@ -137,6 +136,12 @@ main {
     margin: 5px;
 }
 
+.card_buttons {
+    display: flex;
+    align-self: center;
+    justify-content: center;
+}
+
 #cards {
     margin: 0 auto;
 }
@@ -151,4 +156,18 @@ main {
 
 .form-check {
     min-width: 100px;
+}
+
+#completed {
+    margin: auto 10px;
+
+    height: 40px;
+    width: 40px;
+    background-color: #eec321;
+}
+
+#completed:after {
+    content: "";
+    position: absolute;
+    display: none;
 }
