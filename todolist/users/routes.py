@@ -8,6 +8,8 @@ from todolist.users.forms import RegistrationForm, LoginForm, UpdateAccountForm
 from todolist import db_session
 from sqlalchemy import func
 from todolist.helpers import save_picture
+from todolist.tasks.routes import add_task
+from todolist.tasks.forms import TaskForm
 
 
 users = Blueprint('users', __name__)
@@ -30,7 +32,8 @@ def register():
         else:
             picture_file = "default.jpg"
 
-        user = User(name=form.name.data, email=form.email.data, image_file=picture_file)
+        user = User(name=form.name.data, email=form.email.data,
+                    image_file=picture_file)
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
@@ -47,7 +50,8 @@ def login():
 
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        user = db_sess.query(User).filter(
+            User.email == form.email.data).first()
 
         # Проверяем если пользователь есть в базе данных и пароли совпадают
         if user and user.check_password(form.password.data):
@@ -73,14 +77,16 @@ def tasks():
     # Сохраняем url страницы
     session["url"] = url_for("users.tasks")
 
+    form = add_task(True)
+
     db_sess = db_session.create_session()
     # Запрашиваем только задачи, созданные этим пользователем
-    # и дата которых совпадает с сегодняшним днем, 
+    # и дата которых совпадает с сегодняшним днем,
     # отсортированные по приоритету и алфавиту
     tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
                                        Task.scheduled_date == datetime.now().date(), Task.done == 0).order_by(Task.priority, Task.title).all()
 
-    return render_template("index.html", title="Today's Tasks", tasks=tasks)
+    return render_template("index.html", title="Today's Tasks", tasks=tasks, form=form)
 
 
 @users.route("/tasks/upcoming", methods=["GET", "POST"])
@@ -90,10 +96,10 @@ def upcoming_tasks():
     session["url"] = url_for("users.upcoming_tasks")
 
     db_sess = db_session.create_session()
-    # Запрашиваем все задачи, добавленный этим пользователем, 
+    # Запрашиваем все задачи, добавленный этим пользователем,
     # отсортированные по приоритетности, алфавиту и дате
     tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, Task.done == 0).\
-                               order_by(Task.scheduled_date, Task.priority, Task.title).all()
+        order_by(Task.scheduled_date, Task.priority, Task.title).all()
 
     # Группируем задачи по дате
     data = {}
@@ -102,7 +108,8 @@ def upcoming_tasks():
 
     # Для того, чтобы правильно вывести задачи в таблицу посмотри циклы в templates/upcoming_tasks.html
     # Скорее всего придется делать новый template для правильного отображения
-    return render_template('upcoming_tasks.html', title="Upcoming Tasks", tasks=data) # tasks заменить на data
+    # tasks заменить на data
+    return render_template('upcoming_tasks.html', title="Upcoming Tasks", tasks=data)
 
 
 @users.route("/dashboard", methods=["GET"])
@@ -113,13 +120,13 @@ def dashboard():
     # Находим дату недельной давности
     last_week_date = datetime.now().date() - timedelta(7)
 
-    # Запрашиваем количество выполненных задач за последнуюю неделю, 
-    # за последнюю неделю 
+    # Запрашиваем количество выполненных задач за последнуюю неделю,
+    # за последнюю неделю
     tasks = db_sess.query(Task.completed_date, func.count(Task.id)).\
-                    filter(Task.user_id == current_user.id,
-                           Task.completed_date.between(last_week_date, datetime.now().date())).\
-                    group_by(Task.completed_date).\
-                    order_by(Task.completed_date.desc()).all()
+        filter(Task.user_id == current_user.id,
+               Task.completed_date.between(last_week_date, datetime.now().date())).\
+        group_by(Task.completed_date).\
+        order_by(Task.completed_date.desc()).all()
 
     # Заполняем статистику пустыми значениями
     weekday = weekdays(datetime.now().strftime("%A"))
@@ -128,8 +135,10 @@ def dashboard():
         data[group.strftime("%A")] = val
 
     # Запрашиваем завершенные задачи за все время
-    completed_tasks = db_sess.query(func.count(Task.id)).filter(Task.user_id == current_user.id, Task.done == 1).first()[0]
-    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
+    completed_tasks = db_sess.query(func.count(Task.id)).filter(
+        Task.user_id == current_user.id, Task.done == 1).first()[0]
+    image_file = url_for(
+        'static', filename='profile_pics/' + current_user.image_file)
 
     return render_template('dashboard.html', title="Dashboard", tasks=data, completed=completed_tasks, image_file=image_file)
 
@@ -159,7 +168,10 @@ def update_account():
 
         db_sess.commit()
         flash("Account info has been successfully changed!", "info")
-        return redirect(url_for("users.dashboard")) # Перенаправляет на странице профиля
-    image_file = url_for('static', filename='profile_pics/' + current_user.image_file) # Получаем путь к фотографии пользователя
+        # Перенаправляет на странице профиля
+        return redirect(url_for("users.dashboard"))
+    # Получаем путь к фотографии пользователя
+    image_file = url_for(
+        'static', filename='profile_pics/' + current_user.image_file)
 
     return render_template('update_account.html', title='Edit Account Info', form=form)

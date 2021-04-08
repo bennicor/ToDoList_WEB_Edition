@@ -10,11 +10,13 @@ from itertools import groupby
 tasks = Blueprint("tasks", __name__)
 
 # Функция, делающая запросы в базу данных по мере ввода текста в поисковую строку
+
+
 @tasks.route("/search_request", methods=["POST"])
 @login_required
 def search_request():
     db_sess = db_session.create_session()
-    searchbox = request.get_json() # Получаем содержимое строки поиска
+    searchbox = request.get_json()  # Получаем содержимое строки поиска
 
     if session["url"] == url_for("users.tasks"):
         # Запрашиваем задачи, название которых входит в поисковую строку
@@ -24,14 +26,15 @@ def search_request():
                                            Task.done == 0).order_by(Task.priority, Task.title).all()
         result = []
         for task in tasks:
-            schema = TaskSchema() # Создаем схему
-            json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
+            schema = TaskSchema()  # Создаем схему
+            # Производим сериализацию объекта в JSON формат
+            json_result = schema.dump(task)
             result.append(json_result)
 
         return make_response(jsonify(result), 200)
     elif session["url"] == url_for("users.upcoming_tasks"):
         # Запрашиваем задачи, название которых входит в поисковую строку
-        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, 
+        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
                                            Task.title.like(f"%{searchbox}%"),
                                            Task.done == 0).order_by(Task.scheduled_date, Task.priority, Task.title).all()
 
@@ -46,12 +49,13 @@ def search_request():
 @tasks.route("/complete_task", methods=["POST"])
 @login_required
 def complete_task():
-    task_id = int(request.get_json()) # Получаем id, выполненной задачи
+    task_id = int(request.get_json())  # Получаем id, выполненной задачи
 
     db_sess = db_session.create_session()
-    task = db_sess.query(Task).filter(Task.id == task_id, Task.user_id == current_user.id).first()
+    task = db_sess.query(Task).filter(Task.id == task_id,
+                                      Task.user_id == current_user.id).first()
 
-    if task: # Отмечаем задачу завершенной
+    if task:  # Отмечаем задачу завершенной
         task.done = True
         task.completed_date = datetime.now().date()
         db_sess.commit()
@@ -64,13 +68,14 @@ def complete_task():
 
         result = []
         for task in tasks:
-            schema = TaskSchema() # Создаем схему
-            json_result = schema.dump(task) # Производим сериализацию объекта в JSON формат
+            schema = TaskSchema()  # Создаем схему
+            # Производим сериализацию объекта в JSON формат
+            json_result = schema.dump(task)
             result.append(json_result)
 
         return make_response(jsonify(result), 200)
     elif session["url"] == url_for("users.upcoming_tasks"):
-        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, 
+        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
                                            Task.done == 0).order_by(Task.scheduled_date, Task.priority, Task.title).all()
 
         # Группируем задачи по дате
@@ -85,7 +90,7 @@ def complete_task():
 
 @tasks.route('/add_task',  methods=['GET', 'POST'])
 @login_required
-def add_task():
+def add_task(ForUsers=False):
     form = TaskForm()
 
     if form.validate_on_submit():
@@ -99,7 +104,10 @@ def add_task():
         db_sess.add(tasks)
         db_sess.commit()
         flash("Task has been added!", "info")
-        return redirect(session.get("url")) # Перенаправляет на прошлую страницу
+        # Перенаправляет на прошлую страницу
+        return redirect(session.get("url"))
+    if ForUsers:
+        return form
     return render_template('add_task.html', title='Add task', form=form)
 
 
@@ -133,7 +141,8 @@ def edit_task(task_id):
 
             db_sess.commit()
             flash("Task has been successfully edited!", "info")
-            return redirect(session.get("url")) # Перенаправляет на прошлую страницу
+            # Перенаправляет на прошлую страницу
+            return redirect(session.get("url"))
         else:
             abort(404)
 
@@ -151,6 +160,7 @@ def delete_task(task_id):
         db_sess.delete(task)
         db_sess.commit()
         flash("Task has been deleted!", "info")
-        return redirect(session.get("url")) # Перенаправляет на прошлую страницу
+        # Перенаправляет на прошлую страницу
+        return redirect(session.get("url"))
     else:
         abort(404)

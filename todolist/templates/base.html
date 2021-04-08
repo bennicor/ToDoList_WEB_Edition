@@ -107,19 +107,39 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>Сань, разберись с формами</p>
+                        <form action="" method="post">
+                            {{ form.hidden_tag() }}
+                            <p>
+                                {{ form.title.label }}<br>
+                                {{ form.title(class="form-control") }}<br>
+                                {% for error in form.title.errors %}
+                                    <p class="alert alert-danger" role="alert">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </p>
+                            <p>
+                                {{ form.priority.label }}<br>
+                                {{ form.priority(class="form-control") }}<br>
+                                {% for error in form.priority.errors %}
+                                    <p class="alert alert-danger" role="alert">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </p>
+                            <p>
+                                {{ form.scheduled_date.label }}<br>
+                                {{ form.scheduled_date(class="form-control") }}<br>
+                                {% for error in form.scheduled_date.errors %}
+                                    <p class="alert alert-danger" role="alert">
+                                        {{ error }}
+                                    </p>
+                                {% endfor %}
+                            </p>
+                        </form>
                     </div>
                     <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            data-dismiss="modal"
-                        >
-                            Close
-                        </button>
-                        <button type="button" class="btn btn-primary">
-                            Save changes
-                        </button>
+                        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
                     </div>
                 </div>
             </div>
