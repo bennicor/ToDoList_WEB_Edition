@@ -1,5 +1,4 @@
 from todolist import create_app, db_session
-from flask_ngrok import run_with_ngrok
 
 app = create_app()
 # run_with_ngrok(app)
