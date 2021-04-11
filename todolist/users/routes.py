@@ -95,6 +95,8 @@ def upcoming_tasks():
     # Сохраняем url страницы
     session["url"] = url_for("users.upcoming_tasks")
 
+    form = add_task(True)
+
     db_sess = db_session.create_session()
     # Запрашиваем все задачи, добавленный этим пользователем,
     # отсортированные по приоритетности, алфавиту и дате
@@ -109,7 +111,7 @@ def upcoming_tasks():
     # Для того, чтобы правильно вывести задачи в таблицу посмотри циклы в templates/upcoming_tasks.html
     # Скорее всего придется делать новый template для правильного отображения
     # tasks заменить на data
-    return render_template('upcoming_tasks.html', title="Upcoming Tasks", tasks=data)
+    return render_template('upcoming_tasks.html', title="Upcoming Tasks", tasks=data, form=form)
 
 
 @users.route("/dashboard", methods=["GET"])

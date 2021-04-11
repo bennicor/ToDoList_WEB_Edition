@@ -15,7 +15,6 @@
     </head>
     <body>
         <header class="header">
-            <div class="container">
                 <div class="header_nav">
                     <a class="header_logo" href="{{ url_for('main.index') }}">ToDoList!</a>
                 </div>
@@ -35,50 +34,47 @@
                         <img class="rounded-circle account-img" src="{{ image_file }}" width="50" height="50"></a>
                     </div>
                 {% endif %}
-            </div>
         </header>
 
         <div class="side_bar">
-            <div class="row">
-                <div class="sidebar_section">
-                    <div class="sidebar_item">
-                        <img
-                            src="/static/img/icons/Main_page.png"
-                            class="icon"
-                        />
-                        <a href="{{ url_for("users.tasks") }}">Main page</a>
-                    </div>
-                    <div class="sidebar_item">
-                        <img
-                            src="/static/img/icons/Statistics.png"
-                            class="icon"
-                        />
-                        <a href="{{ url_for("users.dashboard") }}">Statistics</a>
-                    </div>
-                    <div class="sidebar_item">
-                        <img
-                            src="/static/img/icons/Projects.png"
-                            class="icon"
-                        />
-                        <a href="#">Projects</a>
-                    </div>
+            <div class="sidebar_section">
+                <div class="sidebar_item">
+                    <img
+                        src="/static/img/icons/Main_page.png"
+                        class="icon"
+                    />
+                    <a href="{{ url_for("users.tasks") }}">Main page</a>
                 </div>
+                <div class="sidebar_item">
+                    <img
+                        src="/static/img/icons/Statistics.png"
+                        class="icon"
+                    />
+                    <a href="{{ url_for("users.dashboard") }}">Statistics</a>
+                </div>
+                <div class="sidebar_item">
+                    <img
+                        src="/static/img/icons/Projects.png"
+                        class="icon"
+                    />
+                    <a href="#">Projects</a>
+                </div>
+            </div>
 
-                <div class="sidebar_section">
-                    <div class="sidebar_item">
-                        <img
-                            src="/static/img/icons/Settings.png"
-                            class="icon"
-                        />
-                        <a href="#">Settings</a>
-                    </div>
-                    <div class="sidebar_item">
-                        <img
-                            src="/static/img/icons/Logout.png"
-                            class="icon"
-                        />
-                        <a href="{{ url_for("users.logout") }}">Logout</a>
-                    </div>
+            <div class="sidebar_section">
+                <div class="sidebar_item">
+                    <img
+                        src="/static/img/icons/Settings.png"
+                        class="icon"
+                    />
+                    <a href="#">Settings</a>
+                </div>
+                <div class="sidebar_item">
+                    <img
+                        src="/static/img/icons/Logout.png"
+                        class="icon"
+                    />
+                    <a href="{{ url_for("users.logout") }}">Logout</a>
                 </div>
             </div>
         </div>
@@ -96,7 +92,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Adding a task</h5>
+                        <h5 class="modal-title">Adding/Editing a task</h5>
                         <button
                             type="button"
                             class="close"

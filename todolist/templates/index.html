@@ -69,7 +69,9 @@
             }
         }
     }
-    PriorityColor();
+    document.addEventListener('DOMContentLoaded', function () {
+        PriorityColor();
+    }, false);
     // Создаем HTML pattern для элемента, который будет отображаться
     function createTaskPattern(data) {
         var pattern = [
@@ -127,12 +129,12 @@
                     });
 
                     tasks.innerHTML = nodes;
+                    PriorityColor();
                 });
             })
             .catch(function (error) {
                 tasks.innerHTML = "Failed to load";
             });
-            PriorityColor();
     }
 
     // При вводе в поисковое поле вызываем функцию fetchSearch
