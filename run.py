@@ -2,9 +2,9 @@ from todolist import create_app, db_session
 from flask_ngrok import run_with_ngrok
 
 app = create_app()
-run_with_ngrok(app)
+# run_with_ngrok(app)
 
 if __name__ == '__main__':
     # Необходимо поместить базу данных в данный католог
     db_session.global_init("todolist/db/TDLDataBase.db")
-    app.run()
+    app.run(debug=True)
