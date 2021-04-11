@@ -77,7 +77,19 @@ def tasks():
     # Сохраняем url страницы
     session["url"] = url_for("users.tasks")
 
-    form = add_task(True)
+    form = TaskForm()
+
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+
+        tasks = Task()
+        tasks.title = form.title.data.strip()
+        tasks.priority = form.priority.data
+        tasks.scheduled_date = form.scheduled_date.data
+        tasks.user_id = current_user.id
+        db_sess.add(tasks)
+        db_sess.commit()
+        flash("Task has been added!", "info")
 
     db_sess = db_session.create_session()
     # Запрашиваем только задачи, созданные этим пользователем
