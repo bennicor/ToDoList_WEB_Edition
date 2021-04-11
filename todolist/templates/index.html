@@ -10,11 +10,11 @@
                     >All tasks</a
                 >
             </div>
-            <a
+            <button
                 class="btn btn-primary"
                 data-toggle="modal"
                 data-target="#AddTaskModal"
-                >Add Task</a
+                >Add Task</button
             >
         </div>
         <div class="cards" id="tasks">
@@ -31,19 +31,12 @@
                             class="btn btn-primary"
                             data-toggle="button"
                             autocomplete="off"
+                            onclick="completeTask('{{ item.id }}')"
                         >
                             Done
                         </button>
-                        <button
-                            href="{{ url_for('tasks.edit_task', task_id=item.id) }}"
-                            class="btn btn-info"
-                            >Edit</button
-                        >
-                        <button
-                            href="{{ url_for('tasks.delete_task', task_id=item.id) }}"
-                            class="btn btn-danger"
-                            >Delete</button
-                        >
+                        <button class="btn btn-info" onclick=location.href="{{ url_for('tasks.edit_task', task_id=item.id) }}">Edit</button>
+                        <button class="btn btn-danger" onclick=location.href="{{ url_for('tasks.delete_task', task_id=item.id) }}">Delete</button>
                     </div>
                 </div>
             </div>
@@ -51,11 +44,12 @@
         </div>
     </div>
 </main>
+
 <div class="modal" id="AddTaskModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Adding/Editing a task</h5>
+                <h5 class="modal-title">Add Task</h5>
                 <button
                     type="button"
                     class="close"
@@ -65,8 +59,8 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body" >
-                <form action="{{ url_for('users.tasks') }}" method="post">
+            <div class="modal-body">
+                <form action="" method="post">
                     {{ form.hidden_tag() }}
                     <p>
                         {{ form.title.label }}<br>
@@ -101,27 +95,29 @@
         </div>
     </div>
 </div>
-{% endblock content %} {% block script %}
+{% endblock content %} 
+{% block script %}
 <script>
+    // Закрашивание карточек в соответсвии с приоритетностью
+    let cardsColors = {1: "#f16a6a", 2: "#f5f25d", 3: "#5dd2f5", 4: "#6af55d"}
+    
     function PriorityColor() {
-        var priority = document.querySelectorAll(".priority");
-        var card = document.querySelectorAll(".card");
-        for (let i = 0; i < priority.length; i++) {
-            console.log(Number(priority[i].innerHTML));
-            if (Number(priority[i].innerHTML) == 1) {
-                card[i].style.backgroundColor = "#f16a6a";
-            } else if (Number(priority[i].innerHTML) == 2) {
-                card[i].style.backgroundColor = "#f5f25d";
-            } else if (Number(priority[i].innerHTML) == 3) {
-                card[i].style.backgroundColor = "#5dd2f5";
-            } else if (Number(priority[i].innerHTML) == 4) {
-                card[i].style.backgroundColor = "#6af55d";
-            }
+        let priorities = document.querySelectorAll(".priority");
+        let cards = document.querySelectorAll(".card");
+
+        for (let i = 0; i < priorities.length; i++) {
+            let priority = Number(priorities[i].innerHTML);
+
+            cards[i].style.backgroundColor = cardsColors[priority];
         }
     }
-    document.addEventListener('DOMContentLoaded', function () {
-        PriorityColor();
-    }, false);
+
+    // Task completion implementation
+    function completeTask(id) {
+        fetchData(id, '{{ url_for("tasks.complete_task") }}');
+    }
+
+
     // Создаем HTML pattern для элемента, который будет отображаться
     function createTaskPattern(data) {
         var pattern = [
@@ -134,13 +130,15 @@
             data["priority"],
             '</span></p>',
             '<div class="btn-group" style="width: 250px; height: 43px;">',
-            '<button type="button" class="btn btn-primary" data-toggle="button" autocomplete="off">Done</button>',
-            '<button href="/tasks/',
+            '<button type="button" class="btn btn-primary" data-toggle="button" autocomplete="off" onclick=completeTask(',
             data["id"],
-            '" class="btn btn-info">Edit</button>',
-            '<button href="/tasks_delete/',
+            ')>Done</button>',
+            '<button class="btn btn-info" onclick=location.href="/tasks/',
             data["id"],
-            '" class="btn btn-danger">Delete</button>',
+            '"> Edit </button>',
+            '<button class="btn btn-danger" onclick=location.href="/tasks_delete/',
+            data["id"],
+            '">Delete</button>',
             "</div>",
             "</div>",
             "</div>",
@@ -182,7 +180,7 @@
                 });
             })
             .catch(function (error) {
-                tasks.innerHTML = "Failed to load";
+                tasks.innerHTML = `Failed to load. Reason: ${error.message}`;
             });
     }
 
@@ -196,15 +194,8 @@
         }
     };
 
-    // Task completion implementation
-    // id передается при нажатии на конкретный checkbox
-    function completeTask(id) {
-        const checkbox = document.getElementsByName(id)[0].checked;
-
-        // Проверяем если checkbox активен
-        if (checkbox) {
-            fetchData(id, '{{ url_for("tasks.complete_task") }}');
-        }
-    }
+    document.addEventListener('DOMContentLoaded', function () {
+        PriorityColor();
+    }, false);
 </script>
 {% endblock script %}

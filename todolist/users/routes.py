@@ -77,19 +77,12 @@ def tasks():
     # Сохраняем url страницы
     session["url"] = url_for("users.tasks")
 
+    # Добавляем задачу из modal формы
     form = TaskForm()
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-
-        tasks = Task()
-        tasks.title = form.title.data.strip()
-        tasks.priority = form.priority.data
-        tasks.scheduled_date = form.scheduled_date.data
-        tasks.user_id = current_user.id
-        db_sess.add(tasks)
-        db_sess.commit()
-        flash("Task has been added!", "info")
+        add_task(form)
+        return redirect(session.get("url"))
 
     db_sess = db_session.create_session()
     # Запрашиваем только задачи, созданные этим пользователем
@@ -107,7 +100,12 @@ def upcoming_tasks():
     # Сохраняем url страницы
     session["url"] = url_for("users.upcoming_tasks")
 
-    form = add_task(True)
+    # Добавляем задачу из modal формы
+    form = TaskForm()
+
+    if form.validate_on_submit():
+        add_task(form)
+        return redirect(session.get("url"))
 
     db_sess = db_session.create_session()
     # Запрашиваем все задачи, добавленный этим пользователем,

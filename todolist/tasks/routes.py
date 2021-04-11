@@ -88,37 +88,27 @@ def complete_task():
     flash("Task completed!", "info")
 
 
-@tasks.route('/add_task',  methods=['GET', 'POST'])
-@login_required
-def add_task(ForUsers=False):
-    form = TaskForm()
+def add_task(form):
+    db_sess = db_session.create_session()
 
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
-
-        tasks = Task()
-        tasks.title = form.title.data.strip()
-        tasks.priority = form.priority.data
-        tasks.scheduled_date = form.scheduled_date.data
-        tasks.user_id = current_user.id
-        db_sess.add(tasks)
-        db_sess.commit()
-        flash("Task has been added!", "info")
-        # Перенаправляет на прошлую страницу
-        return redirect(session.get("url"))
-    if ForUsers:
-        return form
-    return render_template('add_task.html', title='Add task', form=form)
+    tasks = Task()
+    tasks.title = form.title.data.strip()
+    tasks.priority = form.priority.data
+    tasks.scheduled_date = form.scheduled_date.data
+    tasks.user_id = current_user.id
+    db_sess.add(tasks)
+    db_sess.commit()
+    flash("Task has been added!", "info")
 
 
 @tasks.route('/tasks/<int:task_id>',  methods=['GET', 'POST'])
 @login_required
 def edit_task(task_id):
     form = TaskForm()
+    db_sess = db_session.create_session()
 
     # Если пользователь получает данные, то заполняем форму текующими данными о задаче
     if request.method == "GET":
-        db_sess = db_session.create_session()
         tasks = db_sess.query(Task).filter(
             Task.id == task_id, Task.user_id == current_user.id).first()
 
@@ -131,7 +121,6 @@ def edit_task(task_id):
 
     # Если форма готова к отправке, обновляем информацию на более актульную
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
         tasks = db_sess.query(Task).filter(Task.id == task_id).first()
 
         if tasks:
