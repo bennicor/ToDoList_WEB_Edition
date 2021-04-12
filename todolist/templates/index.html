@@ -72,8 +72,13 @@
                         {% endfor %}
                     </p>
                     <p>
-                        {{ form.priority.label }}<br>
-                        {{ form.priority(class="form-control") }}<br>
+                        {{ form.priority.label }}
+                        <select class="form-control" id="priority" name="priority" type="text" value="1">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                        </select> <br>
                         {% for error in form.priority.errors %}
                             <p class="alert alert-danger" role="alert">
                                 {{ error }}
@@ -82,7 +87,8 @@
                     </p>
                     <p>
                         {{ form.scheduled_date.label }}<br>
-                        {{ form.scheduled_date(class="form-control") }}<br>
+                        <input type="date" name="calendar" value="{{ today }}" min="{{ today }}">
+                        <br>
                         {% for error in form.scheduled_date.errors %}
                             <p class="alert alert-danger" role="alert">
                                 {{ error }}

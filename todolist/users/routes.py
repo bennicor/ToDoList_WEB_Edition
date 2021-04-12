@@ -15,6 +15,11 @@ from todolist.tasks.forms import TaskForm
 users = Blueprint('users', __name__)
 
 
+@users.route("/")
+def start_page():
+    return render_template("start_page.html")
+
+
 @users.route("/register", methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
@@ -71,6 +76,11 @@ def logout():
     return redirect(url_for("main.index"))
 
 
+@users.route("/projects", methods=["GET", "POST"])
+def projects():
+    return render_template("projects.html")
+
+
 @users.route("/tasks/today", methods=["GET", "POST"])
 @login_required
 def tasks():
@@ -88,10 +98,13 @@ def tasks():
     # Запрашиваем только задачи, созданные этим пользователем
     # и дата которых совпадает с сегодняшним днем,
     # отсортированные по приоритету и алфавиту
+
+    today = datetime.today().strftime("%Y-%m-%d")
+
     tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
                                        Task.scheduled_date == datetime.now().date(), Task.done == 0).order_by(Task.priority, Task.title).all()
 
-    return render_template("index.html", title="Today's Tasks", tasks=tasks, form=form)
+    return render_template("index.html", title="Today's Tasks", tasks=tasks, form=form, today=today)
 
 
 @users.route("/tasks/upcoming", methods=["GET", "POST"])
@@ -118,10 +131,12 @@ def upcoming_tasks():
     for key, group in groupby(tasks, key=lambda x: x.scheduled_date):
         data[key.strftime("%d.%m.%Y")] = [thing for thing in group]
 
+    today = datetime.today().strftime("%Y-%m-%d")
+
     # Для того, чтобы правильно вывести задачи в таблицу посмотри циклы в templates/upcoming_tasks.html
     # Скорее всего придется делать новый template для правильного отображения
     # tasks заменить на data
-    return render_template('upcoming_tasks.html', title="Upcoming Tasks", tasks=data, form=form)
+    return render_template('upcoming_tasks.html', title="Upcoming Tasks", tasks=data, form=form, today=today)
 
 
 @users.route("/dashboard", methods=["GET"])

@@ -14,13 +14,14 @@ a:hover {
     text-decoration: none;
 }
 
-
 /*  Header  */
 
 header {
     z-index: 2;
     position: fixed;
+    display: flex;
     text-align: justify;
+    justify-content: space-between;
     letter-spacing: 1px;
     width: 100%;
     height: 8em;
@@ -29,13 +30,6 @@ header {
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
     border-radius: 10px;
     background-color: white;
-}
-
-header::after {
-    content: "";
-    width: 100%;
-    height: 1em;
-    display: inline-block;
 }
 
 .header_logo {
@@ -72,7 +66,6 @@ header::after {
     cursor: pointer;
 }
 
-
 /*  SideBar  */
 
 .side_bar {
@@ -99,11 +92,14 @@ header::after {
     transform: scale(1);
 }
 
+.sidebar_text {
+    animation: anime infinite 2s linear;
+}
+
 .icon {
     width: 28px;
     margin: 0 5px;
 }
-
 
 /* Trasitions */
 
@@ -113,7 +109,6 @@ header::after {
     transition: all 0.3s;
     transform: scale(1.1);
 }
-
 
 /* Main-content */
 
@@ -131,18 +126,17 @@ main {
 
 .card {
     margin: 5px;
-    transition: all 0.3s;
+    bottom: 0;
+    right: 0;
+    transition-duration: 0.2s;
+    transition-property: all;
 }
 
-.card-text {}
-
-
-/*
 .card:hover {
+    background-color: rgba(0, 0, 0, 0.7);
     bottom: 5px;
     right: 5px;
 }
-*/
 
 #cards {
     margin: 0 auto;
@@ -186,5 +180,45 @@ main {
     position: absolute;
     right: 0;
     top: 0;
-    z-index: 1; 
+    z-index: 1;
+}
+
+/* Dashboard */
+
+.withimg {
+    display: flex;
+    flex-direction: column;
+    max-width: 290px;
+    max-height: 250px;
+    margin-bottom: 20px;
+}
+
+.withtext {
+    text-align: right;
+    min-width: 250px;
+    min-height: 250px;
+    margin-bottom: 20px;
+}
+
+/* ANIMS */
+
+@keyframes anime {
+    0% {
+        color: blue;
+    }
+    33% {
+        color: blueviolet;
+    }
+    66% {
+        color: blueviolet;
+    }
+    100% {
+        color: blue;
+    }
+}
+
+.anim_text {
+    font-size: xx-large;
+    animation: anime infinite 2s linear;
+    margin: auto;
 }
