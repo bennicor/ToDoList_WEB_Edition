@@ -3,7 +3,7 @@
 {% block content %}
 <main> 
     <div style="margin-top: 8em;">
-        <h1>Adding a task</h1>
+        <h1>Editing a task</h1>
         <form action="" method="post">
             {{ form.hidden_tag() }}
             <p>
@@ -17,7 +17,12 @@
             </p>
             <p>
                 {{ form.priority.label }}<br>
-                {{ form.priority(class="form-control") }}<br>
+                <select class="form-control" id="priority" name="priority" type="text" value="{{ form.scheduled_date.priority }}">
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                </select> <br>
                 {% for error in form.priority.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}
@@ -26,7 +31,8 @@
             </p>
             <p>
                 {{ form.scheduled_date.label }}<br>
-                {{ form.scheduled_date(class="form-control") }}<br>
+                <input type="date" name="calendar" value="{{ form.scheduled_date.data }}" min="{{ today }}">
+                <br>
                 {% for error in form.scheduled_date.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}

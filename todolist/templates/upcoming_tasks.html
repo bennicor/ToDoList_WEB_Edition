@@ -59,7 +59,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="" method="post">
+                <form action="{{ url_for('users.upcoming_tasks') }}" method="post">
                     {{ form.hidden_tag() }}
                     <p>
                         {{ form.title.label }}<br>
@@ -71,8 +71,13 @@
                         {% endfor %}
                     </p>
                     <p>
-                        {{ form.priority.label }}<br>
-                        {{ form.priority(class="form-control") }}<br>
+                        {{ form.priority.label }}
+                        <select class="form-control" id="priority" name="priority" type="text" value="1">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                        </select> <br>
                         {% for error in form.priority.errors %}
                             <p class="alert alert-danger" role="alert">
                                 {{ error }}
@@ -81,7 +86,8 @@
                     </p>
                     <p>
                         {{ form.scheduled_date.label }}<br>
-                        {{ form.scheduled_date(class="form-control") }}<br>
+                        <input type="date" name="calendar" value="{{ today }}" min="{{ today }}">
+                        <br>
                         {% for error in form.scheduled_date.errors %}
                             <p class="alert alert-danger" role="alert">
                                 {{ error }}
@@ -107,7 +113,7 @@
         const textToFind = this.value;
 
         // Поиск начнется только если в строке есть символы
-        if (textToFind.match(/^[a-z0-9]*$/i)) {
+        if (textToFind.match(/^[a-z0-9а-я]*$/i)) {
             fetchData(textToFind, '{{ url_for("tasks.search_request") }}');
         }
     };

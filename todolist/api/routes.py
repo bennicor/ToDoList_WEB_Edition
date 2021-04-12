@@ -5,6 +5,7 @@ import jwt
 import datetime
 from todolist.config import Config
 from functools import wraps
+from base64 import b64decode
 
 
 api = Blueprint('api', __name__)
@@ -19,8 +20,8 @@ def token_required(f):
         if "x-access-token" in request.headers:
             token = request.headers["x-access-token"]
 
-        if not token:
-            return make_response(jsonify({"message": "Token is missing!"}), 401)
+            if not token:
+                return make_response(jsonify({"message": "Token is missing!"}), 401)
 
         try:
             # Декодируем токен и делаем запрос в базу данных,
@@ -33,7 +34,7 @@ def token_required(f):
             if not user:
                 raise Exception
         except:
-            return make_response(jsonify({"message": "Token is missing!"}), 401)
+            return make_response(jsonify({"message": "Incorrect token!"}), 401)
 
         # Возвращаем текущего пользователя и аргументы, переданные в функцию
         return f(user, *args, **kwargs)
@@ -65,7 +66,7 @@ def login():
     # Если пользователь зарегистрирован и ввел правильные данные,
     # генирируем уникальный токен и отправляем в теле ответа
     if user.check_password(auth.password):
-        token = jwt.encode({"id": user.id, "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, Config.SECRET_KEY)
+        token = jwt.encode({"id": user.id, "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, Config.SECRET_KEY, algorithm="HS256")
 
         return jsonify({"token": token})
 
@@ -126,6 +127,7 @@ def complete_task(user, task_id):
     task = session.query(Task).filter(Task.id == task_id, Task.user_id == user.id).first()
 
     task.done = True
+    task.completed_date = datetime.datetime.now().date()
     session.commit()
 
     return jsonify({"message": "Task has been completed!"})

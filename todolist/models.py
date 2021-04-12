@@ -34,6 +34,7 @@ class TaskSchema(Schema):
     title = fields.Str()
     done = fields.Bool()
     priority = fields.Int()
+    scheduled_date = fields.Str()
 
 
 class User(SqlAlchemyBase, UserMixin):

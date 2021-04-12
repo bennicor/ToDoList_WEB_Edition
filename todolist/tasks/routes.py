@@ -94,7 +94,7 @@ def add_task(form):
     tasks = Task()
     tasks.title = form.title.data.strip()
     tasks.priority = form.priority.data
-    tasks.scheduled_date = form.scheduled_date.data
+    tasks.scheduled_date = datetime.strptime(form.scheduled_date.data, "%Y-%m-%d")
     tasks.user_id = current_user.id
     db_sess.add(tasks)
     db_sess.commit()
@@ -121,12 +121,15 @@ def edit_task(task_id):
 
     # Если форма готова к отправке, обновляем информацию на более актульную
     if form.validate_on_submit():
+        date = request.form.get("calendar")
+        form.scheduled_date.data = date
+        
         tasks = db_sess.query(Task).filter(Task.id == task_id).first()
 
         if tasks:
             tasks.title = form.title.data.strip()
             tasks.priority = form.priority.data
-            tasks.scheduled_date = form.scheduled_date.data
+            tasks.scheduled_date = datetime.strptime(form.scheduled_date.data, "%Y-%m-%d")
 
             db_sess.commit()
             flash("Task has been successfully edited!", "info")
@@ -135,7 +138,7 @@ def edit_task(task_id):
         else:
             abort(404)
 
-    return render_template('edit_task.html', title='Edit task', form=form)
+    return render_template('edit_task.html', title='Edit task', form=form, today=datetime.now().date())
 
 
 @tasks.route("/tasks_delete/<int:task_id>", methods=["GET", "POST"])
