@@ -167,7 +167,7 @@ main {
     display: none;
 }
 
-/* Alets */
+/* Alerts */
 
 .alert {
     position: absolute;
@@ -189,7 +189,7 @@ main {
     display: flex;
     flex-direction: column;
     max-width: 290px;
-    max-height: 250px;
+    max-height: 290px;
     margin-bottom: 20px;
 }
 

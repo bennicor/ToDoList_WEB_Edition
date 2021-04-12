@@ -115,6 +115,7 @@ def edit_task(task_id):
         if tasks:
             form.title.data = tasks.title
             form.priority.data = tasks.priority
+            print(form.priority.data)
             form.scheduled_date.data = tasks.scheduled_date
         else:
             abort(404)
