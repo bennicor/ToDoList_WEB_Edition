@@ -2,7 +2,7 @@
 <main>
     <div style="margin-top: 8em;">
         <a href="{{ url_for('users.update_account') }}" class="btn btn-primary">Change Info</a>
-        <img class="rounded-circle account-img" src="{{ image_file }}">
+        <img class="rounded-circle account-img" src="{{ image_file }}" style="width: 250px; height: 250px;">
         <h1>{{ current_user.name }}</h1>
         <h4>
             With us since {{ current_user.created_date.strftime("%d.%m.%Y") }}
