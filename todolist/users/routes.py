@@ -14,6 +14,10 @@ from todolist.tasks.forms import TaskForm
 
 users = Blueprint('users', __name__)
 
+@users.route("/")
+def start_page():
+    return render_template('main.html')
+
 
 @users.route("/register", methods=["GET", "POST"])
 def register():

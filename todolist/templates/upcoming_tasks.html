@@ -12,34 +12,39 @@
             >Add Task</button
         >
         <div id="tasks">
-            {% for key, val in tasks.items() %}
-                <h1 style="text-align: center">{{ key }}</h1>
-                <div class="cards">
-                    {% for item in val %}
-                        <div class="card text-center" style="width: 18rem">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ item.title }}</h5>
-                                <p class="card-text">
-                                    Priority: <span class="priority">{{ item.priority }}</span>
-                                </p>
-                                <div class="btn-group" style="width: 250px; height: 43px;">
-                                    <button
-                                        type="button"
-                                        class="btn btn-primary"
-                                        data-toggle="button"
-                                        autocomplete="off"
-                                        onclick="completeTask('{{ item.id }}')"
-                                    >
-                                        Done
-                                    </button>
-                                    <button class="btn btn-info" onclick=location.href="{{ url_for('tasks.edit_task', task_id=item.id) }}">Edit</button>
-                                    <button class="btn btn-danger" onclick=location.href="{{ url_for('tasks.delete_task', task_id=item.id) }}">Delete</button>
+            {% if not tasks %}
+                <p style="font-size: x-large;">You don't have any upcoming tasks<br>
+                Add a task by clicking the "Add Task" button!</p>
+            {% else %}
+                {% for key, val in tasks.items() %}
+                    <h1 style="text-align: center">{{ key }}</h1>
+                    <div class="cards">
+                        {% for item in val %}
+                            <div class="card text-center" style="width: 18rem">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ item.title }}</h5>
+                                    <p class="card-text">
+                                        Priority: <span class="priority">{{ item.priority }}</span>
+                                    </p>
+                                    <div class="btn-group" style="width: 250px; height: 43px;">
+                                        <button
+                                            type="button"
+                                            class="btn btn-primary"
+                                            data-toggle="button"
+                                            autocomplete="off"
+                                            onclick="completeTask('{{ item.id }}')"
+                                        >
+                                            Done
+                                        </button>
+                                        <button class="btn btn-info" onclick=location.href="{{ url_for('tasks.edit_task', task_id=item.id) }}">Edit</button>
+                                        <button class="btn btn-danger" onclick=location.href="{{ url_for('tasks.delete_task', task_id=item.id) }}">Delete</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 </main>

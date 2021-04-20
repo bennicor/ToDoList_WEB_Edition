@@ -92,6 +92,19 @@ header {
     transform: scale(1);
 }
 
+.sidebar_item {
+    position: relative;
+}
+
+.sidebar_item a::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    content: "";
+}
+
 .sidebar_text {
     animation: anime infinite 2s linear;
 }
