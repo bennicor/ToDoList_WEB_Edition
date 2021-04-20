@@ -7,3 +7,4 @@ if __name__ == '__main__':
     # Необходимо поместить базу данных в данный католог
     db_session.global_init("todolist/db/TDLDataBase.db")
     app.run()
+
