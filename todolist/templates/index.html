@@ -1,54 +1,46 @@
 {% extends "base.html" %} {% block content %}
-<main>
-    <div class="container" id="cards" style="margin-top: 8em">
-        <div class="card_header">
-            <h1 style="text-align: center">Today Tasks</h1>
-            <div class="btn-group">
-                <a
-                    href="{{ url_for('users.upcoming_tasks') }}"
-                    class="btn btn-primary"
-                    >All tasks</a
-                >
+<div>
+    <div class="content-title">
+        <h1 class="title">Today's Tasks</h1>
+        <button
+            class="btn btn-primary"
+            data-toggle="modal"
+            data-target="#AddTaskModal"
+            >Add Task</button>
+    </div>
+    <div class="cards" id="tasks">
+        {% if not tasks %}
+            <div class="help-text">
+            <p>You don't have any tasks for today<br>
+            Add a task by clicking the "Add Task" button!</p>
             </div>
-            <button
-                class="btn btn-primary"
-                data-toggle="modal"
-                data-target="#AddTaskModal"
-                >Add Task</button
-            >
-        </div>
-        <div class="cards" id="tasks">
-            {% if not tasks %}
-                <p style="font-size: x-large;">You don't have any tasks for today<br>
-                Add a task by clicking the "Add Task" button!</p>
-            {% else %}
-                {% for item in tasks %}
-                <div class="card text-center" style="width: 18rem">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ item.title }}</h5>
-                        <p class="card-text">
-                            Priority: <span class="priority">{{ item.priority }}</span>
-                        </p>
-                        <div class="btn-group" style="width: 250px; height: 43px;">
-                            <button
-                                type="button"
-                                class="btn btn-primary"
-                                data-toggle="button"
-                                autocomplete="off"
-                                onclick="completeTask('{{ item.id }}')"
-                            >
-                                Done
-                            </button>
-                            <button class="btn btn-info" onclick=location.href="{{ url_for('tasks.edit_task', task_id=item.id) }}">Edit</button>
-                            <button class="btn btn-danger" onclick=location.href="{{ url_for('tasks.delete_task', task_id=item.id) }}">Delete</button>
-                        </div>
+        {% else %}
+            {% for item in tasks %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.title }}</h5>
+                    <p class="card-text">
+                        Priority: <span name="priorities">{{ item.priority }}</span>
+                    </p>
+                    <div class="btn-group">
+                        <button
+                            type="button"
+                            class="btn btn-success"
+                            data-toggle="button"
+                            autocomplete="off"
+                            onclick="completeTask('{{ item.id }}')"
+                        >
+                            Done
+                        </button>
+                        <button class="btn btn-info" onclick=location.href="{{ url_for('tasks.edit_task', task_id=item.id) }}">Edit</button>
+                        <button class="btn btn-danger" onclick=location.href="{{ url_for('tasks.delete_task', task_id=item.id) }}">Delete</button>
                     </div>
                 </div>
-                {% endfor %}
-            {% endif %}
-        </div>
+            </div>
+            {% endfor %}
+        {% endif %}
     </div>
-</main>
+</div>
 
 <div class="modal" id="AddTaskModal" tabindex="-1">
     <div class="modal-dialog">
@@ -68,37 +60,41 @@
                 <form action="{{ url_for('users.tasks') }}" method="post">
                     {{ form.hidden_tag() }}
                     <p>
-                        {{ form.title.label }}<br>
-                        {{ form.title(class="form-control") }}<br>
-                        {% for error in form.title.errors %}
-                            <p class="alert alert-danger" role="alert">
-                                {{ error }}
-                            </p>
-                        {% endfor %}
+                        {{ form.title.label }}
+                        {{ form.title(class="form-control") }}
                     </p>
                     <p>
                         {{ form.priority.label }}
-                        <select class="form-control" id="priority" name="priority" type="text" value="1">
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                        </select> <br>
-                        {% for error in form.priority.errors %}
-                            <p class="alert alert-danger" role="alert">
-                                {{ error }}
-                            </p>
-                        {% endfor %}
+                        <div class="priority-choice">
+                            <div class="priority-unit">
+                                <label class="container">
+                                    <input type="radio" checked name="priority" value="1">
+                                    <span class="checkmark">1</span>
+                                </label>
+                            </div>
+                            <div class="priority-unit">
+                                <label class="container">
+                                    <input type="radio" name="priority" value="2">
+                                    <span class="checkmark">2</span>
+                                </label>
+                            </div>
+                            <div class="priority-unit">
+                                <label class="container">
+                                    <input type="radio" name="priority" value="3">
+                                    <span class="checkmark">3</span>
+                                </label>
+                            </div>
+                            <div class="priority-unit">
+                                <label class="container">
+                                    <input type="radio" name="priority" value="4">
+                                    <span class="checkmark">4</span>
+                                </label>
+                            </div>
+                        </div>
                     </p>
                     <p>
                         {{ form.scheduled_date.label }}<br>
-                        <input type="date" name="calendar" value="{{ today }}" min="{{ today }}">
-                        <br>
-                        {% for error in form.scheduled_date.errors %}
-                            <p class="alert alert-danger" role="alert">
-                                {{ error }}
-                            </p>
-                        {% endfor %}
+                        <input class="calendar" type="date" name="calendar" data-date-format="DD MMMM YYYY" value="{{ today }}" min="{{ today }}">
                     </p>
                     <p style="float: right;">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
                 </form>
@@ -109,20 +105,4 @@
 {% endblock content %} 
 {% block script %}
 <script src="{{ url_for('static', filename='scripts/today.js') }}"></script>
-<script>
-    // Task completion implementation
-    function completeTask(id) {
-        fetchData(id, '{{ url_for("tasks.complete_task") }}');
-    }
-
-    // При вводе в поисковое поле вызываем функцию fetchSearch
-    document.getElementById("finder").oninput = function () {
-        const textToFind = this.value.trim();
-
-        // Поиск начнется только если в строке есть символы
-        if (textToFind.match(/^[a-z0-9а-я]*$/i)) {
-            fetchData(textToFind, '{{ url_for("tasks.search_request") }}');
-        }
-    };
-</script>
 {% endblock script %}

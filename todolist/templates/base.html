@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" style="margin-top: -20px;">
+<html lang="ru">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +9,7 @@
             integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
             crossorigin="anonymous"
         />
+        <style>@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@500&display=swap');</style>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon"/>
@@ -16,97 +17,108 @@
     </head>
     <body>
         <header class="header">
-                <div class="header_nav">
-                    <a class="header_logo" href="{{ url_for('main.index') }}">What ToDo</a>
-                </div>
+            <div>
+                <a href="{{ url_for('main.index') }}">What ToDo</a>
+            </div>
 
-                <div class="input">
-                    <input
-                        type="search"
-                        name="finder"
-                        id="finder"
-                        class="finder"
-                        placeholder="Find task"
-                    />
-                </div>
-                {% if current_user.is_authenticated %}
-                    <div class="header_nav">
-                        {% set image_file = url_for('static', filename='profile_pics/' + current_user.image_file) %}
-                        <a href="{{ url_for("users.dashboard") }}" class="username">{{ current_user.name.capitalize() }}
-                        <img class="rounded-circle account-img" src="{{ image_file }}" width="50" height="50"></a>
-                    </div>
-                {% endif %}
+            <input
+                type="search"
+                name="search-bar"
+                id="search-bar"
+                placeholder="Find task"
+            />
+
+            <div>
+                {% set image_file = url_for('static', filename='profile_pics/' + current_user.image_file) %}
+                <a href="{{ url_for("users.dashboard") }}">
+                    <p class="username">{{ current_user.name.capitalize() }}</p>
+                    <img class="rounded-circle account-img" src="{{ image_file }}">
+                </a>
+            </div>
         </header>
 
-        <div class="side_bar">
-            <div class="sidebar_section">
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Main_page.png"
-                        class="icon"
-                    />
-                    <a href="{{ url_for("users.tasks") }}">Main page</a>
+        <div class="sidebar">
+            <div>
+                <div class="sidebar-item">
+                    <a href="{{ url_for("users.tasks") }}">
+                        <img
+                            src="/static/img/icons/Main_page.png"
+                            class="icon"
+                        />
+                        <p>Today</p>
+                    </a>
                 </div>
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Statistics.png"
-                        class="icon"
-                    />
-                    <a href="{{ url_for("users.dashboard") }}">Statistics</a>
+                <div class="sidebar-item">
+                    <a href="{{ url_for("users.upcoming_tasks") }}">
+                        <img
+                            src="/static/img/icons/Main_page.png"
+                            class="icon"
+                        />
+                        <p>Upcoming</p>
+                    </a>
                 </div>
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Projects.png"
-                        class="icon"
-                    />
-                    <a href="{{ url_for("users.projects") }}">Projects</a>
+                <div class="sidebar-item">
+                    <a href="{{ url_for("users.dashboard") }}">
+                        <img
+                            src="/static/img/icons/Statistics.png"
+                            class="icon"
+                        />
+                        <p>Statistics</p>
+                    </a>
+                </div>
+                <div class="sidebar-item">
+                    <a href="{{ url_for("users.projects") }}">
+                        <img
+                            src="/static/img/icons/Projects.png"
+                            class="icon"
+                        />
+                        <p>Projects</p>
+                    </a>
                 </div>
             </div>
 
-            <div class="sidebar_section">
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Settings.png"
-                        class="icon"
-                    />
-                    <a href="{{ url_for('users.update_account') }}">Settings</a>
+            <div>
+                <div class="sidebar-item">
+                    <a href="{{ url_for("users.update_account") }}">
+                        <img
+                            src="/static/img/icons/Settings.png"
+                            class="icon"
+                        />
+                        <p>Settings</p>
+                    </a>
                 </div>
-                <div class="sidebar_item">
-                    <img
-                        src="/static/img/icons/Logout.png"
-                        class="icon"
-                    />
-                    <a href="{{ url_for("users.logout") }}">Logout</a>
+                <div class="sidebar-item">
+                    <a href="{{ url_for("users.logout") }}">
+                        <img
+                            src="/static/img/icons/Logout.png"
+                            class="icon"
+                        />
+                        <p>Logout</p>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- Выводятся flash уведомления -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for msg in messages %}
-                <div id="my-alert" class="alert alert-primary alert-dismissible fade show" role="alert">{{ msg }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                </div>
+                    <div id="my-alert" class="alert alert-primary alert-dismissible fade show flash-notification" role="alert">{{ msg }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        {% block content %} {% endblock %}
+        <div class="content">
+            {% block content %} {% endblock %}
+        </div>
+    </body>
+        {% block script %}{% endblock %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-        <script>
-            $(document).ready(function(){
-                $("#myModal").modal('show');
-            });
-            $(function(){
-                window.setTimeout(function(){
-                    $('#my-alert').alert('close');
-                },5000);
-            });
-        </script>
-    </body>
-        {% block script %}{% endblock %}
+        <script src="{{ url_for('static', filename='scripts/main.js') }}"></script>
 </html>

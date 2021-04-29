@@ -1,63 +1,48 @@
 {% extends "base.html" %}
 
 {% block content %}
-<main> 
-    <div style="margin-top: 8em;">
-        <h1>Editing a task</h1>
-        <form action="" method="post">
-            {{ form.hidden_tag() }}
-            <p>
-                {{ form.title.label }}<br>
-                {{ form.title(class="form-control") }}<br>
-                {% for error in form.title.errors %}
-                    <p class="alert alert-danger" role="alert">
-                        {{ error }}
-                    </p>
-                {% endfor %}
-            </p>
-            <p>
-                {{ form.priority.label }}<br>
-                <select class="form-control" id="priority" name="priority" type="text">
-                    {% if form.priority.data == 1 %}
-                        <option value="1" selected>1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    {% elif form.priority.data == 2 %}
-                        <option value="1">1</option>
-                        <option value="2" selected>2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    {% elif form.priority.data == 3 %}
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3" selected>3</option>
-                        <option value="4">4</option>
-                    {% elif form.priority.data == 4 %}
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4" selected>4</option>
-                    {% endif %}
-                </select> <br>
-                {% for error in form.priority.errors %}
-                    <p class="alert alert-danger" role="alert">
-                        {{ error }}
-                    </p>
-                {% endfor %}
-            </p>
-            <p>
-                {{ form.scheduled_date.label }}<br>
-                <input type="date" name="calendar" value="{{ form.scheduled_date.data }}" min="{{ today }}">
-                <br>
-                {% for error in form.scheduled_date.errors %}
-                    <p class="alert alert-danger" role="alert">
-                        {{ error }}
-                    </p>
-                {% endfor %}
-            </p>
-            <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
-        </form>
-    </div>
-</main>
+<div>
+    <p class="title">Edit Task</p>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.title.label }}
+            {{ form.title(class="form-control") }}
+        </p>
+        <p>
+            {{ form.priority.label }}
+            <div class="priority-choice">
+                <div class="priority-unit">
+                    <label class="container">
+                        <input type="radio" name="priority" value="1">
+                        <span class="checkmark">1</span>
+                    </label>
+                </div>
+                <div class="priority-unit">
+                    <label class="container">
+                        <input type="radio" name="priority" value="2">
+                        <span class="checkmark">2</span>
+                    </label>
+                </div>
+                <div class="priority-unit">
+                    <label class="container">
+                        <input type="radio" name="priority" value="3">
+                        <span class="checkmark">3</span>
+                    </label>
+                </div>
+                <div class="priority-unit">
+                    <label class="container">
+                        <input type="radio" name="priority" value="4">
+                        <span class="checkmark">4</span>
+                    </label>
+                </div>
+            </div>
+        </p>
+        <p>
+            {{ form.scheduled_date.label }}<br>
+            <input class="calendar" type="date" name="calendar" data-date-format="DD MMMM YYYY" value="{{ today }}" min="{{ today }}">
+        </p>
+        <p style="float: right;">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    </form>
+</div>
 {% endblock %}

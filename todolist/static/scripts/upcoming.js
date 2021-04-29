@@ -1,8 +1,8 @@
 // Закрашивание карточек в соответсвии с приоритетностью
-let cardsColors = { 1: "#f16a6a", 2: "#f5f25d", 3: "#5dd2f5", 4: "#6af55d" }
+let cardsColors = { 1: "#E63E22", 2: "#F0EB65", 3: "#66D9B8", 4: "#8965F0" }
 
 function PriorityColor() {
-    let priorities = document.querySelectorAll(".priority");
+    let priorities = document.querySelectorAll('span[name="priorities"]');
     let cards = document.querySelectorAll(".card");
 
     for (let i = 0; i < priorities.length; i++) {
@@ -12,19 +12,20 @@ function PriorityColor() {
     }
 }
 
+
 // Создаем HTML pattern для элемента, который будет отображаться
 function createTaskPattern(data) {
     var pattern = [
-        '<div class="card text-center" style="width: 18rem">',
+        '<div class="card">',
         '<div class="card-body">',
         '<h5 class="card-title">',
         data["title"],
         '</h5>',
-        '<p class="card-text">Priority: <span class="priority">',
+        '<p class="card-text">Priority: <span name="priorities">',
         data["priority"],
         '</span></p>',
-        '<div class="btn-group" style="width: 250px; height: 43px;">',
-        '<button type="button" class="btn btn-primary" data-toggle="button" autocomplete="off" onclick=completeTask(',
+        '<div class="btn-group">',
+        '<button type="button" class="btn btn-success" data-toggle="button" autocomplete="off" onclick=completeTask(',
         data["id"],
         ')>Done</button>',
         '<button class="btn btn-info" onclick=location.href="/tasks/',
@@ -35,7 +36,7 @@ function createTaskPattern(data) {
         '">Delete</button>',
         "</div>",
         "</div>",
-        "</div>",
+        "</div>"
     ];
 
     return pattern.join("");
@@ -43,10 +44,11 @@ function createTaskPattern(data) {
 
 function createTaskDatePattern(date) {
     var pattern = [
-        '<h1 style="text-align: center">',
+        '<div class="date-group">',
+        '<h1>',
         date,
         "</h1>",
-        '<div class="cards">',
+        '<div class="cards">'
     ];
 
     return pattern.join("");
@@ -76,19 +78,22 @@ function fetchData(text, url) {
                     pattern,
                     nodes = "";
 
-                for (var key in data) {
-                    formatedDate = new Date(key).toLocaleDateString(
-                        "ru-RU"
-                    );
-                    date = createTaskDatePattern(formatedDate);
-                    nodes += date;
+                if (!isDictEmpty(data)) {
+                    for (var key in data) {
+                        formatedDate = new Date(key).toLocaleDateString("ru-RU");
+                        date = createTaskDatePattern(formatedDate);
+                        nodes += date;
 
-                    for (const [key1, value] of Object.entries(data[key])) {
-                        pattern = createTaskPattern(value);
-                        nodes += pattern;
+                        for (let [_, value] of Object.entries(data[key])) {
+                            pattern = createTaskPattern(value);
+                            nodes += pattern;
+                        }
+
+                        nodes += "</div>";
+                        nodes += "</div>";
                     }
-
-                    nodes += "</div>";
+                } else {
+                    nodes = `<div class='help-text'><p>You don 't have any tasks for today<br>Add a task by clicking the "Add Task" button!</p></div>`;
                 }
 
                 tasks.innerHTML = nodes;
@@ -96,10 +101,29 @@ function fetchData(text, url) {
             });
         })
         .catch(function(error) {
-            tasks.innerHTML = `Failed to load. Reason: ${error.message}`;
+            tasks.innerHTML = `Failed to load. Reason: ${ error.message }`;
         });
+}
+
+function isDictEmpty(obj) {
+    return Object.keys(obj).length === 0;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     PriorityColor();
 }, false);
+
+// Task completion implementation
+function completeTask(id) {
+    fetchData(id, '/complete_task');
+}
+
+// При вводе в поисковое поле вызываем функцию fetchSearch
+document.getElementById("search-bar").oninput = function() {
+    const textToFind = this.value;
+
+    // Поиск начнется только если в строке есть символы
+    if (textToFind.match(/^[a-z0-9а-я]*$/i)) {
+        fetchData(textToFind, '/search_request');
+    }
+};

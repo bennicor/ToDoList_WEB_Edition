@@ -5,6 +5,7 @@ from todolist import db_session
 from .forms import TaskForm
 from todolist.models import Task, TaskSchema
 from itertools import groupby
+from termcolor import colored
 
 
 tasks = Blueprint("tasks", __name__)
@@ -85,7 +86,6 @@ def complete_task():
 
         return make_response(jsonify(data), 200)
 
-    flash("Task completed!", "info")
 
 
 def add_task(form):
@@ -94,6 +94,7 @@ def add_task(form):
     tasks = Task()
     tasks.title = form.title.data.strip()
     tasks.priority = form.priority.data
+    print(colored(form.priority.data, "green"))
     tasks.scheduled_date = datetime.strptime(form.scheduled_date.data, "%Y-%m-%d")
     tasks.user_id = current_user.id
     db_sess.add(tasks)

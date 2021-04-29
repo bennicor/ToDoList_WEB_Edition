@@ -1,53 +1,42 @@
 {% extends "base.html" %} {% block content %}
-<main>
-    <div class="container" style="margin-top: 8em; min-width: 800px;">
-        <div class="row align-items-start">
-            <div class="col withimg">
-                <img
-                    style="width: 250px; height: 250px;"
-                    class="rounded-circle account-img"
-                    src="{{ image_file }}"
-                />
-                <a
-                    href="{{ url_for('users.update_account') }}"
-                    class="btn btn-primary"
-                    style="float: left"
-                    >Change Info</a
-                >
-            </div>
-            <div class="col withtext">
-                <h1>{{ current_user.name }}</h1>
-                <h3>
-                    {{ current_user.email }}
-                </h3>
-                <h4>
-                    With us since {{
-                    current_user.created_date.strftime("%d.%m.%Y") }}
-                </h4>
-                <h3 class="display-6">
-                    <b>{{ completed }}</b> completed tasks
-                </h3>
-            </div>
-            <h3><b>Weekly Activity</b></h3>
-            <div class="row align-items-start">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th scope="col">Day</th>
-                            <th scope="col">Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for key, val in tasks.items() %}
-                        <tr>
-                            <td>{{ key }}</td>
-                            <td>{{ val }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+<div class="dashboard">
+    <div class="row-content">
+        <div class="col-withimg">
+            <img
+                class="big-img"
+                src="{{ image_file }}"
+            />
+            <a
+                href="{{ url_for('users.update_account') }}"
+                class="btn btn-info"
+                >Change Info</a
+            >
+        </div>
+        <div class="col-withtext">
+            <h2>{{ current_user.name }}</h2>
+            <h5>{{ current_user.email }}</h5>
+            <h4> With us since {{ current_user.created_date.strftime("%d.%m.%Y") }}</h4>
+            <h4><b>{{ completed }}</b> completed tasks</h4>
         </div>
     </div>
-</main>
+    <div>
+        <h3 style="margin-bottom: 20px; text-align: center;"><b>Completed tasks in the last 7 days</b></h3>
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Day</th>
+                    <th>Tasks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, val in tasks.items() %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td>{{ val }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock content %}

@@ -1,22 +1,18 @@
-from flask import Flask, render_template, redirect, url_for, request, session, Blueprint, flash
-from flask_login import current_user, login_user, logout_user, login_required
 from datetime import datetime, timedelta
-from todolist.models import User, Task
 from itertools import groupby
-from todolist.helpers import weekdays
-from todolist.users.forms import RegistrationForm, LoginForm, UpdateAccountForm
-from todolist import db_session
-from sqlalchemy import func
-from todolist.helpers import save_picture
-from todolist.tasks.routes import add_task
-from todolist.tasks.forms import TaskForm
 
+from flask import (Blueprint, Flask, flash, redirect, render_template, request,
+                   session, url_for)
+from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy import func
+from todolist import db_session
+from todolist.helpers import save_picture, weekdays
+from todolist.models import Task, User
+from todolist.tasks.forms import TaskForm
+from todolist.tasks.routes import add_task
+from todolist.users.forms import LoginForm, RegistrationForm, UpdateAccountForm
 
 users = Blueprint('users', __name__)
-
-@users.route("/")
-def start_page():
-    return render_template('main.html')
 
 
 @users.route("/register", methods=["GET", "POST"])
@@ -119,8 +115,9 @@ def upcoming_tasks():
 
     if form.validate_on_submit():
         # Изменяем дату формы на выбранную в календаре
-        date = request.form.get("calendar")
+        date, priority = request.form.get("calendar"), request.form.get("priority")
         form.scheduled_date.data = date
+        form.priority.data = priority
 
         add_task(form)
         return redirect(session.get("url"))
@@ -150,8 +147,7 @@ def dashboard():
     # Находим дату недельной давности
     last_week_date = datetime.now().date() - timedelta(7)
 
-    # Запрашиваем количество выполненных задач за последнуюю неделю,
-    # за последнюю неделю
+    # Запрашиваем количество выполненных задач за последнуюю неделю
     tasks = db_sess.query(Task.completed_date, func.count(Task.id)).\
         filter(Task.user_id == current_user.id,
                Task.completed_date.between(last_week_date, datetime.now().date())).\
@@ -167,8 +163,9 @@ def dashboard():
     # Запрашиваем завершенные задачи за все время
     completed_tasks = db_sess.query(func.count(Task.id)).filter(
         Task.user_id == current_user.id, Task.done == 1).first()[0]
-    image_file = url_for(
-        'static', filename='profile_pics/' + current_user.image_file)
+
+    # Загружаем фотографию профиля пользователя
+    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
 
     return render_template('dashboard.html', title="Dashboard", tasks=data, completed=completed_tasks, image_file=image_file)
 
