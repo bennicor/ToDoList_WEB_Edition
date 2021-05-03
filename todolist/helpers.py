@@ -9,7 +9,10 @@ def weekdays(day):
     i = days.index(day) + 1
     d1 = list(reversed(days[:i]))
     d1.extend(list(reversed(days[i:])))
-    return d1
+
+    # Создаем словарь из дней со стандартными значениями
+    data = {key: 0 for key in d1}
+    return data
 
 # Сохраняем картинку, загруженную пользователем
 def save_picture(form_picture):

@@ -8,7 +8,8 @@ from .db_session import SqlAlchemyBase
 from sqlalchemy.orm import relation
 from todolist import db_session
 
-# Инициализируем декоратор авторизации.
+
+# Инициализируем декоратор авторизации
 # Пользователь не сможет совершать действия, помеченные декоратором, если он не авторизован
 @login_manager.user_loader
 def load_user(user_id):

@@ -5,26 +5,20 @@ from todolist import db_session
 from .forms import TaskForm
 from todolist.models import Task, TaskSchema
 from itertools import groupby
-from termcolor import colored
+from todolist.db.db_tasks_queries import get_today_tasks, get_upcoming_tasks, get_task
 
 
 tasks = Blueprint("tasks", __name__)
 
 # Функция, делающая запросы в базу данных по мере ввода текста в поисковую строку
-
-
 @tasks.route("/search_request", methods=["POST"])
 @login_required
 def search_request():
-    db_sess = db_session.create_session()
     searchbox = request.get_json()  # Получаем содержимое строки поиска
 
     if session["url"] == url_for("users.tasks"):
-        # Запрашиваем задачи, название которых входит в поисковую строку
-        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
-                                           Task.scheduled_date == datetime.now().date(),
-                                           Task.title.like(f"%{searchbox}%"),
-                                           Task.done == 0).order_by(Task.priority, Task.title).all()
+        tasks = get_today_tasks(current_user, searchbox)
+
         result = []
         for task in tasks:
             schema = TaskSchema()  # Создаем схему
@@ -34,10 +28,7 @@ def search_request():
 
         return make_response(jsonify(result), 200)
     elif session["url"] == url_for("users.upcoming_tasks"):
-        # Запрашиваем задачи, название которых входит в поисковую строку
-        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
-                                           Task.title.like(f"%{searchbox}%"),
-                                           Task.done == 0).order_by(Task.scheduled_date, Task.priority, Task.title).all()
+        tasks = get_upcoming_tasks(current_user, searchbox)
 
         # Группируем задачи по дате
         data = {}
@@ -53,8 +44,7 @@ def complete_task():
     task_id = int(request.get_json())  # Получаем id, выполненной задачи
 
     db_sess = db_session.create_session()
-    task = db_sess.query(Task).filter(Task.id == task_id,
-                                      Task.user_id == current_user.id).first()
+    task = get_task(id, current_user)
 
     if task:  # Отмечаем задачу завершенной
         task.done = True
@@ -63,9 +53,7 @@ def complete_task():
 
     # Запрашиваем из базы данных задачи, в соответствии с текущей страницей
     if session["url"] == url_for("users.tasks"):
-        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
-                                           Task.scheduled_date == datetime.now().date(),
-                                           Task.done == 0).order_by(Task.priority, Task.title).all()
+        tasks = get_today_tasks(current_user)
 
         result = []
         for task in tasks:
@@ -76,8 +64,7 @@ def complete_task():
 
         return make_response(jsonify(result), 200)
     elif session["url"] == url_for("users.upcoming_tasks"):
-        tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
-                                           Task.done == 0).order_by(Task.scheduled_date, Task.priority, Task.title).all()
+        tasks = get_upcoming_tasks(current_user)
 
         # Группируем задачи по дате
         data = {}
@@ -85,21 +72,6 @@ def complete_task():
             data[str(key)] = [TaskSchema().dump(thing) for thing in group]
 
         return make_response(jsonify(data), 200)
-
-
-
-def add_task(form):
-    db_sess = db_session.create_session()
-
-    tasks = Task()
-    tasks.title = form.title.data.strip()
-    tasks.priority = form.priority.data
-    print(colored(form.priority.data, "green"))
-    tasks.scheduled_date = datetime.strptime(form.scheduled_date.data, "%Y-%m-%d")
-    tasks.user_id = current_user.id
-    db_sess.add(tasks)
-    db_sess.commit()
-    flash("Task has been added!", "info")
 
 
 @tasks.route('/tasks/<int:task_id>',  methods=['GET', 'POST'])
@@ -110,13 +82,11 @@ def edit_task(task_id):
 
     # Если пользователь получает данные, то заполняем форму текующими данными о задаче
     if request.method == "GET":
-        tasks = db_sess.query(Task).filter(
-            Task.id == task_id, Task.user_id == current_user.id).first()
+        tasks = get_task(task_id, current_user)
 
         if tasks:
             form.title.data = tasks.title
             form.priority.data = tasks.priority
-            print(form.priority.data)
             form.scheduled_date.data = tasks.scheduled_date
         else:
             abort(404)
@@ -126,7 +96,7 @@ def edit_task(task_id):
         date = request.form.get("calendar")
         form.scheduled_date.data = date
         
-        tasks = db_sess.query(Task).filter(Task.id == task_id).first()
+        tasks = get_task(task_id, current_user)
 
         if tasks:
             tasks.title = form.title.data.strip()
@@ -147,8 +117,7 @@ def edit_task(task_id):
 @login_required
 def delete_task(task_id):
     db_sess = db_session.create_session()
-    task = db_sess.query(Task).filter(
-        Task.id == task_id, Task.user_id == current_user.id).first()
+    task = get_task(task_id, current_user)
 
     if task:
         db_sess.delete(task)

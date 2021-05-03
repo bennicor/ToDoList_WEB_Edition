@@ -2,7 +2,7 @@ import os
 
 
 class Config:
-    SECRET_KEY = "yandexlyceum_secret_key"
+    SECRET_KEY = "itssupersecret"
     SEND_FILE_MAX_AGE_DEFAULT = 0
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = True

@@ -1,16 +1,16 @@
 from datetime import datetime, timedelta
 from itertools import groupby
-
 from flask import (Blueprint, Flask, flash, redirect, render_template, request,
                    session, url_for)
 from flask_login import current_user, login_required, login_user, logout_user
-from sqlalchemy import func
 from todolist import db_session
 from todolist.helpers import save_picture, weekdays
 from todolist.models import Task, User
 from todolist.tasks.forms import TaskForm
-from todolist.tasks.routes import add_task
 from todolist.users.forms import LoginForm, RegistrationForm, UpdateAccountForm
+from todolist.db.db_user_queries import create_user, get_user
+from todolist.db.db_tasks_queries import get_today_tasks, get_upcoming_tasks, get_weekly_completed_tasks, get_all_completed, add_task
+
 
 users = Blueprint('users', __name__)
 
@@ -23,8 +23,6 @@ def register():
     form = RegistrationForm()
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-
         # Если пользователь не загрузил собственную фотографию
         # Выбирается фотография по умолчанию
         if form.image_file.data:
@@ -32,11 +30,10 @@ def register():
         else:
             picture_file = "default.jpg"
 
-        user = User(name=form.name.data, email=form.email.data,
-                    image_file=picture_file)
-        user.set_password(form.password.data)
-        db_sess.add(user)
-        db_sess.commit()
+        user = create_user(name=form.name.data, 
+                           email=form.email.data,
+                           password=form.password.data,
+                           profile_image=picture_file)
         return redirect(url_for("users.login"))
     return render_template("register.html", title="Register", form=form)
 
@@ -49,9 +46,7 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(
-            User.email == form.email.data).first()
+        user = get_user(current_user)
 
         # Проверяем если пользователь есть в базе данных и пароли совпадают
         if user and user.check_password(form.password.data):
@@ -86,20 +81,10 @@ def tasks():
     form = TaskForm()
 
     if form.validate_on_submit():
-        # Изменяем дату формы на выбранную в календаре
-        date = request.form.get("calendar")
-        form.scheduled_date.data = date
-
-        add_task(form)
+        add_task(form, current_user)
         return redirect(session.get("url"))
 
-    db_sess = db_session.create_session()
-    # Запрашиваем только задачи, созданные этим пользователем
-    # и дата которых совпадает с сегодняшним днем,
-    # отсортированные по приоритету и алфавиту
-
-    tasks = db_sess.query(Task).filter(Task.user_id == current_user.id,
-                                       Task.scheduled_date == datetime.now().date(), Task.done == 0).order_by(Task.priority, Task.title).all()
+    tasks = get_today_tasks(current_user)
 
     return render_template("index.html", title="Today's Tasks", tasks=tasks, form=form, today=datetime.now().date())
 
@@ -114,55 +99,34 @@ def upcoming_tasks():
     form = TaskForm()
 
     if form.validate_on_submit():
-        # Изменяем дату формы на выбранную в календаре
-        date, priority = request.form.get("calendar"), request.form.get("priority")
-        form.scheduled_date.data = date
-        form.priority.data = priority
-
-        add_task(form)
+        add_task(form, current_user)
         return redirect(session.get("url"))
 
-    db_sess = db_session.create_session()
-    # Запрашиваем все задачи, добавленный этим пользователем,
-    # отсортированные по приоритетности, алфавиту и дате
-    tasks = db_sess.query(Task).filter(Task.user_id == current_user.id, Task.done == 0).\
-        order_by(Task.scheduled_date, Task.priority, Task.title).all()
+    tasks = get_upcoming_tasks(current_user)
 
     # Группируем задачи по дате
     data = {}
     for key, group in groupby(tasks, key=lambda x: x.scheduled_date):
         data[key.strftime("%d.%m.%Y")] = [thing for thing in group]
 
-    # Для того, чтобы правильно вывести задачи в таблицу посмотри циклы в templates/upcoming_tasks.html
-    # Скорее всего придется делать новый template для правильного отображения
-    # tasks заменить на data
     return render_template('upcoming_tasks.html', title="Upcoming Tasks", tasks=data, form=form, today=datetime.now().date())
 
 
 @users.route("/dashboard", methods=["GET"])
 @login_required
 def dashboard():
-    db_sess = db_session.create_session()
-
     # Находим дату недельной давности
-    last_week_date = datetime.now().date() - timedelta(7)
+    last_week_date = datetime.now().date() - timedelta(6)
 
     # Запрашиваем количество выполненных задач за последнуюю неделю
-    tasks = db_sess.query(Task.completed_date, func.count(Task.id)).\
-        filter(Task.user_id == current_user.id,
-               Task.completed_date.between(last_week_date, datetime.now().date())).\
-        group_by(Task.completed_date).\
-        order_by(Task.completed_date.desc()).all()
+    tasks = get_weekly_completed_tasks(current_user, last_week_date)
 
     # Заполняем статистику пустыми значениями
-    weekday = weekdays(datetime.now().strftime("%A"))
-    data = {key: 0 for key in weekday}
+    data = weekdays(datetime.now().strftime("%A"))
     for group, val in tasks:
         data[group.strftime("%A")] = val
 
-    # Запрашиваем завершенные задачи за все время
-    completed_tasks = db_sess.query(func.count(Task.id)).filter(
-        Task.user_id == current_user.id, Task.done == 1).first()[0]
+    completed_tasks = get_all_completed(current_user)
 
     # Загружаем фотографию профиля пользователя
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
@@ -180,10 +144,10 @@ def update_account():
         form.name.data = current_user.name
         form.email.data = current_user.email
 
-    # Если форма готова к отправке, обновляем информацию на более актульную
+    # Если форма готова к отправке, обновляем информацию на актульную
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        user = get_user(current_user)
 
         # Если пользователь заменил фотографию - меняем ее
         if form.image_file.data:
@@ -198,7 +162,6 @@ def update_account():
         # Перенаправляет на странице профиля
         return redirect(url_for("users.dashboard"))
     # Получаем путь к фотографии пользователя
-    image_file = url_for(
-        'static', filename='profile_pics/' + current_user.image_file)
+    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
 
     return render_template('update_account.html', title='Edit Account Info', form=form)
