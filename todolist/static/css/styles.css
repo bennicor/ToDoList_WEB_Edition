@@ -19,6 +19,22 @@ a:hover {
 }
 
 
+/* Bootstrap Classes Reassign */
+
+.container-fluid {
+    padding: 0;
+    position: absolute;
+}
+
+.h-15 {
+    height: 15%!important;
+}
+
+.h-85 {
+    height: 85%!important;
+}
+
+
 /* Customize Scrollbar */
 
 ::-webkit-scrollbar {
@@ -39,14 +55,7 @@ a:hover {
 /*  Header  */
 
 header {
-    position: fixed;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     z-index: 1;
-    width: 100%;
-    height: 15%;
-    top: 0;
     padding: 2% 4%;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
     border-radius: 0 0 10px 0;
@@ -55,8 +64,7 @@ header {
 
 .username {
     display: inline;
-    font-size: 20px;
-    font-weight: 500;
+    font-size: 19px;
     margin-right: 10px;
 }
 
@@ -66,7 +74,7 @@ header {
 }
 
 #search-bar {
-    width: 40%;
+    width: 60%;
     border: none;
     border-bottom: 3px solid gray;
     border-radius: 0 0 4px 4px;
@@ -81,18 +89,14 @@ header {
 
 .sidebar {
     z-index: 1;
-    position: fixed;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    top: 15%;
-    height: 85%;
-    width: 20%;
     border-right: 1px solid rgba(0, 0, 0, 0.3);
     border-radius: 0 10px 10px 0;
     padding: 1.5% 1%;
-    float: left;
     background-color: rgb(238, 232, 232);
+    height: 100%;
 }
 
 .sidebar-item {
@@ -100,7 +104,7 @@ header {
     cursor: pointer;
     padding: 8px 10px;
     border-radius: 8px;
-    margin: 10px 0;
+    margin: 15px 0;
     font-size: 18px;
     transition: all 0.25s;
 }
@@ -142,9 +146,9 @@ header {
 /* Main-content */
 
 .help-text {
+    position: absolute;
     font-size: large;
     text-align: center;
-    position: absolute;
     top: 85%;
     width: 100%;
 }
@@ -161,7 +165,7 @@ header {
 }
 
 .content-title .btn-primary {
-    width: 15%;
+    width: 200px;
     height: 55px;
     background-color: #7565F0;
     color: white;
@@ -175,13 +179,10 @@ header {
 }
 
 .content {
-    position: absolute;
-    width: 80%;
-    height: 85%;
-    top: 15%;
+    margin-left: 15px;
+    height: 100%;
     padding: 10px 30px;
-    left: 20%;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
 }
 
@@ -228,10 +229,6 @@ header {
 
 /* Dashboard */
 
-.dashboard {
-    margin: 50px 0 0 25px;
-}
-
 .big-img {
     width: 250px;
     height: 250px;
@@ -239,37 +236,8 @@ header {
     border-radius: 50%;
 }
 
-.row-content {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 100px;
-    align-items: center;
-    justify-content: space-around;
-}
-
-.col-withimg {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.col-withimg .btn-info {
-    background-color: #52A1F2;
-    width: 300px;
-}
-
-.col-withimg .btn-info:hover {
-    background-color: #4990d6;
-}
-
-.col-withtext {
-    text-align: center;
-}
-
 .table {
     margin: auto;
-    width: 90%;
     margin-bottom: 40px;
 }
 
@@ -277,10 +245,17 @@ header {
 /* Alerts */
 
 .flash-notification {
-    position: fixed;
     right: 0;
-    top: 15%;
+    position: fixed;
     z-index: 1;
+}
+
+
+/* Edit Page */
+
+.edit {
+    margin: auto;
+    width: 80%;
 }
 
 
@@ -293,7 +268,7 @@ header {
 
 /*  Custom Radio Buttons*/
 
-.container {
+.checkbox {
     display: block;
     position: relative;
     -webkit-user-select: none;
@@ -302,7 +277,7 @@ header {
     user-select: none;
 }
 
-.container input {
+.checkbox input {
     opacity: 0;
     height: 50px;
 }
@@ -326,19 +301,19 @@ header {
     transition: all 0.25s;
 }
 
-.container input:checked[value="1"]~.checkmark {
+.checkbox input:checked[value="1"]~.checkmark {
     background-color: var(--priority-1-color);
 }
 
-.container input:checked[value="2"]~.checkmark {
+.checkbox input:checked[value="2"]~.checkmark {
     background-color: var(--priority-2-color);
 }
 
-.container input:checked[value="3"]~.checkmark {
+.checkbox input:checked[value="3"]~.checkmark {
     background-color: var(--priority-3-color);
 }
 
-.container input:checked[value="4"]~.checkmark {
+.checkbox input:checked[value="4"]~.checkmark {
     background-color: var(--priority-4-color);
 }
 

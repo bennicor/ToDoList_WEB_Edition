@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div>
+<div class="edit">
     <p class="title">Edit Task</p>
     <form action="" method="post">
         {{ form.hidden_tag() }}
@@ -13,25 +13,25 @@
             {{ form.priority.label }}
             <div class="priority-choice">
                 <div class="priority-unit">
-                    <label class="container">
+                    <label class="checkbox">
                         <input type="radio" name="priority" value="1">
                         <span class="checkmark">1</span>
                     </label>
                 </div>
                 <div class="priority-unit">
-                    <label class="container">
+                    <label class="checkbox">
                         <input type="radio" name="priority" value="2">
                         <span class="checkmark">2</span>
                     </label>
                 </div>
                 <div class="priority-unit">
-                    <label class="container">
+                    <label class="checkbox">
                         <input type="radio" name="priority" value="3">
                         <span class="checkmark">3</span>
                     </label>
                 </div>
                 <div class="priority-unit">
-                    <label class="container">
+                    <label class="checkbox">
                         <input type="radio" name="priority" value="4">
                         <span class="checkmark">4</span>
                     </label>

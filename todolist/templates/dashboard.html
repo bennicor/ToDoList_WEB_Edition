@@ -1,42 +1,45 @@
 {% extends "base.html" %} {% block content %}
-<div class="dashboard">
-    <div class="row-content">
-        <div class="col-withimg">
+<div class="container">
+    <div class="row no-gutters mt-5 mb-5">
+        <div class="col-12 col-sm-8 col-md-6 text-center">
             <img
-                class="big-img"
+                class="big-img mx-auto d-block"
                 src="{{ image_file }}"
             />
             <a
                 href="{{ url_for('users.update_account') }}"
-                class="btn btn-info"
+                class="btn btn-info w-75"
                 >Change Info</a
             >
         </div>
-        <div class="col-withtext">
+        <div class="col-12 col-sm-4 col-md-6 text-center my-auto">
             <h2>{{ current_user.name }}</h2>
             <h5>{{ current_user.email }}</h5>
             <h4> With us since {{ current_user.created_date.strftime("%d.%m.%Y") }}</h4>
             <h4><b>{{ completed }}</b> completed tasks</h4>
         </div>
     </div>
-    <div>
-        <h3 style="margin-bottom: 20px; text-align: center;"><b>Completed tasks in the last 7 days</b></h3>
-        <table class="table table-striped">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Day</th>
-                    <th>Tasks</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for key, val in tasks.items() %}
+
+    <div class="row no-gutters">
+        <div class="col mt-5">
+            <h3 class="text-center mb-3"><b>Completed tasks in the last 7 days</b></h3>
+            <table class="table table-striped">
+                <thead class="thead-dark">
                     <tr>
-                        <td>{{ key }}</td>
-                        <td>{{ val }}</td>
+                        <th>Day</th>
+                        <th>Tasks</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for key, val in tasks.items() %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ val }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock content %}
