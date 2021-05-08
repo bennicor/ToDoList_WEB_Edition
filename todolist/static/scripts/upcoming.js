@@ -1,18 +1,3 @@
-// Закрашивание карточек в соответсвии с приоритетностью
-let cardsColors = { 1: "#E63E22", 2: "#F0EB65", 3: "#66D9B8", 4: "#8965F0" }
-
-function PriorityColor() {
-    let priorities = document.querySelectorAll('span[name="priorities"]');
-    let cards = document.querySelectorAll(".card");
-
-    for (let i = 0; i < priorities.length; i++) {
-        let priority = Number(priorities[i].innerHTML);
-
-        cards[i].style.backgroundColor = cardsColors[priority];
-    }
-}
-
-
 // Создаем HTML pattern для элемента, который будет отображаться
 function createTaskPattern(data) {
     var pattern = [
@@ -21,7 +6,7 @@ function createTaskPattern(data) {
         '<h5 class="card-title">',
         data["title"],
         '</h5>',
-        '<p class="card-text">Priority: <span name="priorities">',
+        '<p class="card-text">Priority: <span name="priority">',
         data["priority"],
         '</span></p>',
         '<div class="btn-group">',
@@ -58,7 +43,7 @@ function createTaskDatePattern(date) {
 // Отправляем HTTP запрос в python функцию
 // и получаем оттуда информацию из базы данных
 // В теле запроса передаем содержимое поисковой строки
-function fetchData(text, url) {
+function searchData(text, url) {
     const tasks = document.querySelector("#tasks");
 
     fetch(url, {
@@ -74,8 +59,8 @@ function fetchData(text, url) {
             }
 
             response.json().then(function(data) {
-                let date,
-                    pattern,
+                let date = "",
+                    pattern = "",
                     nodes = "";
 
                 if (!isDictEmpty(data)) {
@@ -89,41 +74,17 @@ function fetchData(text, url) {
                             nodes += pattern;
                         }
 
-                        nodes += "</div>";
-                        nodes += "</div>";
+                        nodes += "</div></div>";
                     }
                 } else {
-                    nodes = `<div class='help-text'><p>You don 't have any tasks for today<br>Add a task by clicking the "Add Task" button!</p></div>`;
+                    nodes = 'Nothing found';
                 }
 
                 tasks.innerHTML = nodes;
-                PriorityColor();
+                ColorCardsByPriority();
             });
         })
         .catch(function(error) {
             tasks.innerHTML = `Failed to load. Reason: ${ error.message }`;
         });
 }
-
-function isDictEmpty(obj) {
-    return Object.keys(obj).length === 0;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    PriorityColor();
-}, false);
-
-// Task completion implementation
-function completeTask(id) {
-    fetchData(id, '/complete_task');
-}
-
-// При вводе в поисковое поле вызываем функцию fetchSearch
-document.getElementById("search-bar").oninput = function() {
-    const textToFind = this.value;
-
-    // Поиск начнется только если в строке есть символы
-    if (textToFind.match(/^[a-z0-9а-я]*$/i)) {
-        fetchData(textToFind, '/search_request');
-    }
-};

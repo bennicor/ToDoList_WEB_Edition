@@ -34,6 +34,23 @@ a:hover {
     height: 85%!important;
 }
 
+button:focus {
+    box-shadow: none;
+    outline: none !important;
+}
+
+.btn-info {
+    color: white;
+}
+
+.btn-info:hover {
+    color: white;
+}
+
+input.form-control:focus {
+    box-shadow: none;
+}
+
 
 /* Customize Scrollbar */
 
@@ -56,10 +73,13 @@ a:hover {
 
 header {
     z-index: 1;
-    padding: 2% 4%;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
     border-radius: 0 0 10px 0;
     background-color: #eee8e8;
+}
+
+.row>header {
+    padding: 2% 2%;
 }
 
 .username {
@@ -150,7 +170,7 @@ header {
     font-size: large;
     text-align: center;
     top: 85%;
-    width: 100%;
+    width: 80%;
 }
 
 .content-title {
@@ -256,13 +276,6 @@ header {
 .edit {
     margin: auto;
     width: 80%;
-}
-
-
-/* Modal Form */
-
-.modal {
-    top: 20%;
 }
 
 

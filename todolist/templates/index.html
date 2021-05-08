@@ -1,67 +1,56 @@
 {% extends "base.html" %} {% block content %}
-<div>
-    <div class="content-title">
-        <h1 class="title">Today's Tasks</h1>
-        <button
-            class="btn btn-primary"
-            data-toggle="modal"
-            data-target="#AddTaskModal"
-            >Add Task</button>
-    </div>
-    <div class="cards" id="tasks">
-        {% if not tasks %}
-            <div class="help-text">
-            <p>You don't have any tasks for today<br>
-            Add a task by clicking the "Add Task" button!</p>
-            </div>
-        {% else %}
-            {% for item in tasks %}
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">{{ item.title }}</h5>
-                    <p class="card-text">
-                        Priority: <span name="priorities">{{ item.priority }}</span>
-                    </p>
-                    <div class="btn-group">
-                        <button
-                            type="button"
-                            class="btn btn-success"
-                            data-toggle="button"
-                            autocomplete="off"
-                            onclick="completeTask('{{ item.id }}')"
-                        >
-                            Done
-                        </button>
-                        <button class="btn btn-info" onclick=location.href="{{ url_for('tasks.edit_task', task_id=item.id) }}">Edit</button>
-                        <button class="btn btn-danger" onclick=location.href="{{ url_for('tasks.delete_task', task_id=item.id) }}">Delete</button>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        {% endif %}
-    </div>
+<div class="content-title">
+    <h1 class="title">Today's Tasks</h1>
+    <button class="btn btn-primary shadow-none" type="button" data-bs-toggle="modal" data-bs-target="#AddTaskModal">Add Task</button>
 </div>
 
-<div class="modal" id="AddTaskModal" tabindex="-1">
+<div class="cards" id="tasks">
+    {% if not tasks %}
+        <div class="help-text">
+        <p>You don't have any tasks for today<br>
+        Add a task by clicking the "Add Task" button!</p>
+        </div>
+    {% else %}
+        {% for item in tasks %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ item.title }}</h5>
+                <p class="card-text">
+                    Priority: <span name="priority">{{ item.priority }}</span>
+                </p>
+                <div class="btn-group">
+                    <button
+                        type="button"
+                        class="btn btn-success"
+                        data-toggle="button"
+                        autocomplete="off"
+                        onclick="completeTask('{{ item.id }}')"
+                    >
+                        Done
+                    </button>
+                    <button class="btn btn-info" onclick=location.href="{{ url_for('tasks.edit_task', task_id=item.id) }}">Edit</button>
+                    <button class="btn btn-danger" onclick=location.href="{{ url_for('tasks.delete_task', task_id=item.id) }}">Delete</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div class="modal fade" id="AddTaskModal" tabindex="-1" aria-labelledby="AddTaskModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Add Task</h5>
-                <button
-                    type="button"
-                    class="close"
-                    data-dismiss="modal"
-                    aria-label="Close"
-                >
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            
             <div class="modal-body">
                 <form action="{{ url_for('users.tasks') }}" method="post">
                     {{ form.hidden_tag() }}
                     <p>
                         {{ form.title.label }}
-                        {{ form.title(class="form-control") }}
+                        {{ form.title(class="form-control", id="taskName") }}
                     </p>
                     <p>
                         {{ form.priority.label }}
@@ -94,9 +83,9 @@
                     </p>
                     <p>
                         {{ form.scheduled_date.label }}<br>
-                        <input class="calendar" type="date" name="calendar" data-date-format="DD MMMM YYYY" value="{{ today }}" min="{{ today }}">
+                        <input class="calendar" type="date" name="calendar" value="{{ today }}" min="{{ today }}">
                     </p>
-                    <p style="float: right;">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+                    <p class="float-end">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
                 </form>
             </div>
         </div>

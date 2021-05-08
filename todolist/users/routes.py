@@ -9,7 +9,8 @@ from todolist.models import Task, User
 from todolist.tasks.forms import TaskForm
 from todolist.users.forms import LoginForm, RegistrationForm, UpdateAccountForm
 from todolist.db.db_user_queries import create_user, get_user
-from todolist.db.db_tasks_queries import get_today_tasks, get_upcoming_tasks, get_weekly_completed_tasks, get_all_completed, add_task
+from todolist.db.db_tasks_queries import (get_today_tasks, get_upcoming_tasks,
+                                          get_weekly_completed_tasks, get_all_completed, add_task)
 
 
 users = Blueprint('users', __name__)
@@ -30,7 +31,7 @@ def register():
         else:
             picture_file = "default.jpg"
 
-        user = create_user(name=form.name.data, 
+        user = create_user(name=form.name.data,
                            email=form.email.data,
                            password=form.password.data,
                            profile_image=picture_file)
@@ -46,7 +47,7 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = get_user(current_user)
+        user, _ = get_user(email=form.email.data)
 
         # Проверяем если пользователь есть в базе данных и пароли совпадают
         if user and user.check_password(form.password.data):
@@ -54,7 +55,7 @@ def login():
             next_page = request.args.get("next")
             flash("You have been logged in!", "info")
             return redirect(next_page) if next_page else redirect(url_for("users.tasks"))
-        flash("Incorrect email or password!", "error")
+        flash("Incorrect email or password!", "danger")
         return render_template("login.html", form=form)
     return render_template('login.html', title='Authorization', form=form)
 
@@ -146,8 +147,7 @@ def update_account():
 
     # Если форма готова к отправке, обновляем информацию на актульную
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = get_user(current_user)
+        user, db_sess = get_user(current_user)
 
         # Если пользователь заменил фотографию - меняем ее
         if form.image_file.data:
@@ -158,7 +158,7 @@ def update_account():
         user.email = form.email.data.strip()
 
         db_sess.commit()
-        flash("Account info has been successfully changed!", "info")
+        flash("Account info has been successfully changed!", "success")
         # Перенаправляет на странице профиля
         return redirect(url_for("users.dashboard"))
     # Получаем путь к фотографии пользователя
