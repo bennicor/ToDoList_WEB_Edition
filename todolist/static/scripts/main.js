@@ -5,14 +5,18 @@ const dateOptions = {
     day: '2-digit'
 };
 
-document.querySelector(".calendar").onchange = function() {
-    let currentDate = new Date(this.value);
-    let formatedDate = new Intl.DateTimeFormat('en', dateOptions).format(currentDate);
-    this.setAttribute("data-date", formatedDate);
-};
+function changeDateFormat(type) {
+    // Изменяем формат даты в календаре в зависимости от выбранной формы
+    if (type == "add") {
+        var calendar = document.getElementById("addTaskCalendar");
+    } else if (type == "edit") {
+        var calendar = document.getElementById("editTaskCalendar");
+    }
 
-// Активируем событие, чтобы по умолчанию отображалась сегодняшняя дата
-document.querySelector(".calendar").onchange();
+    let currentDate = new Date(calendar.value);
+    let formatedDate = new Intl.DateTimeFormat('en', dateOptions).format(currentDate);
+    calendar.setAttribute("data-date", formatedDate);
+}
 
 // Отключаем флеш уведомления через опредленное количество секунд
 window.setTimeout(function() {
@@ -21,9 +25,10 @@ window.setTimeout(function() {
     bsAlert.close();
 }, 4000);
 
-const cardsColors = { 1: "#E63E22", 2: "#F0EB65", 3: "#66D9B8", 4: "#8965F0" }
 
 // Изменяем цвет карточек в соответсвии со значением приоритетности
+const cardsColors = { 1: "#E63E22", 2: "#F0EB65", 3: "#66D9B8", 4: "#8965F0" }
+
 function ColorCardsByPriority() {
     document.querySelectorAll(".card").forEach(card => {
         cardPriority = parseInt(card.querySelector("span[name='priority']").innerHTML, 10);
@@ -33,10 +38,9 @@ function ColorCardsByPriority() {
 
 // Фокусируем на поле ввода при открытии формы
 let myModal = document.getElementById('AddTaskModal');
-let myInput = document.getElementById('taskName');
 
 myModal.addEventListener('shown.bs.modal', function() {
-    myInput.focus();
+    document.getElementById('addTaskName').focus();
 })
 
 // Task completion implementation
@@ -59,9 +63,10 @@ function isDictEmpty(obj) {
     return Object.keys(obj).length === 0;
 }
 
-// Закрашиваем карточки после загрузки страницы
+// Производим вызов функции после полной загрузки страницы
 document.addEventListener('DOMContentLoaded', function() {
     ColorCardsByPriority();
+    changeDateFormat("add");
 }, false);
 
 // При вводе в поисковое поле вызываем функцию fetchSearch
@@ -73,3 +78,114 @@ document.getElementById("search-bar").oninput = function() {
         searchData(textToFind, '/search_request');
     }
 };
+
+// Создаем форму редактирования задачи
+function createEditFormPattern(data) {
+    // Создаем сегодняшнюю дату для ограничения в календаре
+    let currentDate = new Date();
+    let year = currentDate.getFullYear(),
+        month = currentDate.getMonth() + 1,
+        day = currentDate.getDate();
+
+    if (day < 10) day = '0' + day
+    if (month < 10) month = '0' + month
+
+    let today = year + '-' + month + '-' + day
+
+    let pattern = [
+        '<div class="modal fade" id="EditTaskModal" tabindex="-1" aria-labelledby="EditTaskModal" aria-hidden="true">',
+        '<div class="modal-dialog">',
+        '<div class="modal-content">',
+        '<div class="modal-header">',
+        '<h5 class="modal-title">Edit Task</h5>',
+        '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>',
+        '<div class="modal-body">',
+        '<form action="/tasks/',
+        data["id"],
+        '" method="post">',
+        '<p><label for="title">Title</label>',
+        '<input class="form-control" id="editTaskName" name="title" required type="text" value="',
+        data["title"],
+        '"></p>',
+        '<p><label for="priority">Priority</label></p>',
+        '<div class="priority-choice">',
+        '<div class="priority-unit">',
+        '<label class="checkbox">',
+        '<input type="radio"name="priority" value="1">',
+        '<span class="checkmark">1</span>',
+        '</label>',
+        '</div>',
+        '<div class="priority-unit">',
+        '<label class="checkbox">',
+        '<input type="radio"name="priority" value="2">',
+        '<span class="checkmark">2</span>',
+        '</label>',
+        '</div>',
+        '<div class="priority-unit">',
+        '<label class="checkbox">',
+        '<input type="radio"name="priority" value="3">',
+        '<span class="checkmark">3</span>',
+        '</label>',
+        '</div>',
+        '<div class="priority-unit">',
+        '<label class="checkbox">',
+        '<input type="radio"name="priority" value="4">',
+        '<span class="checkmark">4</span>',
+        '</label>',
+        '</div>',
+        '</div>',
+        '<p></p>',
+        '<p><label for="scheduled_date">Schedule Task</label></br>',
+        '<input id="editTaskCalendar" class="calendar" type="date" name="calendar" value="',
+        data["scheduled_date"],
+        `" onchange="changeDateFormat('edit')" min="`,
+        today,
+        '">',
+        '</p>',
+        '<p class="fload-end">',
+        '<input class="btn btn-primary" id="submit" name="submit" type="submit" value="Submit">',
+        '</p>',
+        '</form>',
+        '</div>',
+        '</div>',
+        '</div>',
+        '</div>',
+        '</div>'
+    ];
+
+    return pattern.join("");
+}
+
+// Создаем форму редактирования задачи
+function editTask(id) {
+    let node = document.querySelector("#editModal");
+
+    // Запрашиваем данные задачи по id
+    // и заполняем ими форму
+    fetch(`/tasks/${id}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    }).then(function(response) {
+        response.json().then(function(data) {
+            let form = createEditFormPattern(data);
+            // form = new DOMParser().parseFromString(form, 'text/html').body.firstChild;
+            node.innerHTML = form;
+
+            // Активируем форму
+            let editModal = document.getElementById('EditTaskModal');
+            let bsModal = new bootstrap.Modal(editModal);
+            bsModal.show();
+            changeDateFormat("edit");
+            // Выбираем чекбокс в зависимости от заданной приоритетности задачи
+            document.querySelector(`div[id="EditTaskModal"] label[class="checkbox"] input[value="${data["priority"]}"]`).checked = true;
+
+            // Фокусируеся на поле редактирования после открытия формы
+            editModal.addEventListener('shown.bs.modal', function() {
+                document.getElementById('editTaskName').focus();
+            })
+
+        });
+    });
+}

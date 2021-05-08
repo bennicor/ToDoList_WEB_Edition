@@ -13,9 +13,9 @@ function createTaskPattern(data) {
         '<button type="button" class="btn btn-success" data-toggle="button" autocomplete="off" onclick=completeTask(',
         data["id"],
         ')>Done</button>',
-        '<button class="btn btn-info" onclick=location.href="/tasks/',
+        '<button class="btn btn-info" onclick"editTask(',
         data["id"],
-        '"> Edit </button>',
+        ')"> Edit </button>',
         '<button class="btn btn-danger" onclick=location.href="/tasks_delete/',
         data["id"],
         '">Delete</button>',
@@ -35,35 +35,33 @@ function searchData(text, url) {
     const tasks = document.querySelector("#tasks");
 
     fetch(url, {
-            method: "POST",
-            body: JSON.stringify(text),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-        .then(function(response) {
-            if (!response.ok) {
-                throw Error(response.statusText);
+        method: "POST",
+        body: JSON.stringify(text),
+        headers: {
+            "Content-Type": "application/json",
+        }
+    }).then(function(response) {
+        if (!response.ok) {
+            throw Error(response.statusText);
+        }
+
+        response.json().then(function(data) {
+            let pattern = "",
+                nodes = "";
+
+            if (data.length > 0) {
+                data.forEach((element) => {
+                    pattern = createTaskPattern(element);
+                    nodes += pattern;
+                });
+            } else {
+                nodes = 'Nothing found';
             }
 
-            response.json().then(function(data) {
-                let pattern = "",
-                    nodes = "";
-
-                if (data.length > 0) {
-                    data.forEach((element) => {
-                        pattern = createTaskPattern(element);
-                        nodes += pattern;
-                    });
-                } else {
-                    nodes = 'Nothing found';
-                }
-
-                tasks.innerHTML = nodes;
-                ColorCardsByPriority();
-            });
-        })
-        .catch(function(error) {
-            tasks.innerHTML = `Failed to load. Reason: ${error.message}`;
+            tasks.innerHTML = nodes;
+            ColorCardsByPriority();
         });
+    }).catch(function(error) {
+        tasks.innerHTML = `Failed to load. Reason: ${error.message}`;
+    });
 }

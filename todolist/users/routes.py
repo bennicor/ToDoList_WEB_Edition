@@ -26,15 +26,14 @@ def register():
     if form.validate_on_submit():
         # Если пользователь не загрузил собственную фотографию
         # Выбирается фотография по умолчанию
+        picture_file = "default.jpg"
         if form.image_file.data:
             picture_file = save_picture(form.image_file.data)
-        else:
-            picture_file = "default.jpg"
 
         user = create_user(name=form.name.data,
                            email=form.email.data,
                            password=form.password.data,
-                           profile_image=picture_file)
+                           image_file=picture_file)
         return redirect(url_for("users.login"))
     return render_template("register.html", title="Register", form=form)
 

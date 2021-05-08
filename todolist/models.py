@@ -29,6 +29,9 @@ class Task(SqlAlchemyBase):
     scheduled_date = Column(Date, default=datetime.datetime.now().date())
     completed_date = Column(Date, nullable=True)
 
+    def __repr__(self):
+        return f'<Task> {self.id} {self.title} {self.priority} {self.scheduled_date}'
+
 # Схема для сериализации запросов из строки поиска
 class TaskSchema(Schema):
     id = fields.Int()
@@ -44,7 +47,7 @@ class User(SqlAlchemyBase, UserMixin):
     name = Column(String, nullable=True)
     email = Column(String, index=True, unique=True, nullable=True)
     hashed_password = Column(String, nullable=True)
-    image_file = Column(String, nullable=True)
+    image_file = Column(String, default="default.jpg", nullable=True)
     created_date = Column(DateTime, default=datetime.datetime.now)
     tasks = relation("Task", back_populates='user')
     

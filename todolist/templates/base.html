@@ -9,6 +9,7 @@
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon"/>
         <title>{{ title }}</title>
     </head>
+    
     <body>
         <div class="container-fluid h-100">
             <div id="header" class="row h-15 g-0">
@@ -27,7 +28,7 @@
                         </div>
                         <div class="col-4 col-sm-3 col-md-3">
                             {% set image_file = url_for('static', filename='profile_pics/' + current_user.image_file) %}
-                            <a href="{{ url_for("users.dashboard") }}" style="float: right;">
+                            <a href="{{ url_for("users.dashboard") }}" class="float-end">
                                 <p class="username">{{ current_user.name.capitalize() }}</p>
                                 <img class="rounded-circle account-img" src="{{ image_file }}">
                             </a>

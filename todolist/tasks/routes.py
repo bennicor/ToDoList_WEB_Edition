@@ -68,32 +68,25 @@ def edit_task(task_id):
         task, db_sess = get_task(task_id, current_user)
 
         if task:
-            form.title.data = task.title
-            form.priority.data = task.priority
-            form.scheduled_date.data = task.scheduled_date
+            return make_response(jsonify(TaskSchema().dump(task)), 200)
         else:
             abort(404)
 
-    # Если форма готова к отправке, обновляем информацию на более актульную
-    if form.validate_on_submit():
-        date = request.form.get("calendar")
-        form.scheduled_date.data = date
+    # Если пользователь отправил обновленные данные
+    if request.method == "POST":
+        data = request.form
         
         task, db_sess = get_task(task_id, current_user)
-
+        
         if task:
-            task.title = form.title.data.strip()
-            task.priority = form.priority.data
-            task.scheduled_date = datetime.strptime(form.scheduled_date.data, "%Y-%m-%d")
-
+            task.title = data.get("title")
+            task.priority = data.get("priority")
+            task.scheduled_date = datetime.strptime(data.get("calendar"), "%Y-%m-%d")
             db_sess.commit()
-            flash("Task has been successfully edited!", "primary")
-            # Перенаправляет на прошлую страницу
-            return redirect(session.get("url"))
+            flash("Task has been successfully edited!", "success")
+            return redirect(session["url"])
         else:
             abort(404)
-
-    return render_template('edit_task.html', title='Edit task', form=form, today=datetime.now().date())
 
 
 @tasks.route("/tasks_delete/<int:task_id>", methods=["GET", "POST"])
@@ -104,8 +97,8 @@ def delete_task(task_id):
     if task:
         db_sess.delete(task)
         db_sess.commit()
-        flash("Task has been deleted!", "primary")
+        flash("Task has been deleted!", "danger")
         # Перенаправляет на прошлую страницу
-        return redirect(session.get("url"))
+        return redirect(session["url"])
     else:
         abort(404)

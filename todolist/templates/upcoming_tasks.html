@@ -29,7 +29,7 @@
                                     >
                                         Done
                                     </button>
-                                    <button class="btn btn-info" onclick=location.href="{{ url_for('tasks.edit_task', task_id=item.id) }}">Edit</button>
+                                    <button class="btn btn-info" onclick="editTask('{{ item.id }}')">Edit</button>
                                     <button class="btn btn-danger" onclick=location.href="{{ url_for('tasks.delete_task', task_id=item.id) }}">Delete</button>
                                 </div>
                             </div>
@@ -54,7 +54,7 @@
                     {{ form.hidden_tag() }}
                     <p>
                         {{ form.title.label }}
-                        {{ form.title(class="form-control", id="taskName") }}
+                        {{ form.title(class="form-control", id="addTaskName") }}
                     </p>
                     <p>
                         {{ form.priority.label }}
@@ -87,7 +87,7 @@
                     </p>
                     <p>
                         {{ form.scheduled_date.label }}<br>
-                        <input class="calendar" type="date" name="calendar" value="{{ today }}" min="{{ today }}">
+                        <input id="addTaskCalendar" class="calendar" type="date" onchange="changeDateFormat('add')" name="calendar" value="{{ today }}" min="{{ today }}">
                     </p>
                     <p class="float-end">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
                 </form>
@@ -95,6 +95,8 @@
         </div>
     </div>
 </div>
+
+<div id="editModal"></div>
 {% endblock %} {% block script %}
 <script src="{{ url_for('static', filename='scripts/upcoming.js') }}"></script>
 {% endblock %}
