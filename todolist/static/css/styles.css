@@ -3,6 +3,8 @@
     --priority-2-color: #f0eb65b4;
     --priority-3-color: #66d9b8b9;
     --priority-4-color: #8a65f0c5;
+    --main-background-color: #eee8e8;
+    --search-bar-border-color: rgb(121, 116, 116);
 }
 
 * {
@@ -16,6 +18,17 @@ a,
 a:hover {
     text-decoration: none;
     color: black;
+}
+
+
+/* Google Font SVG Styles */
+
+.material-icons-sharp {
+    vertical-align: text-bottom;
+}
+
+.material-icons-sharp.md-dark.md-inactive {
+    color: rgba(0, 0, 0, 0.26);
 }
 
 
@@ -71,11 +84,19 @@ input.form-control:focus {
 
 /*  Header  */
 
+#logo {
+    width: 40%;
+}
+
+#logo:hover {
+    fill: red;
+}
+
 header {
     z-index: 1;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
     border-radius: 0 0 10px 0;
-    background-color: #eee8e8;
+    background-color: var(--main-background-color);
 }
 
 .row>header {
@@ -93,15 +114,35 @@ header {
     height: 60px;
 }
 
+
+/* Search Bar SVG Implementation */
+
+#search {
+    position: relative;
+}
+
 #search-bar {
     width: 60%;
+    padding: 0 0 0 25px;
     border: none;
     border-bottom: 3px solid gray;
     border-radius: 0 0 4px 4px;
     outline: none;
     transition: all 0.33s;
     transform: scale(1);
-    background-color: #eee8e8;
+    background-color: var(--main-background-color);
+}
+
+#search-bar:focus {
+    border-bottom-color: var(--search-bar-border-color);
+    transition: all 0.33s;
+    transform: scaleX(1.05);
+    transform-origin: left;
+}
+
+#search-svg {
+    position: absolute;
+    z-index: 2;
 }
 
 
@@ -115,7 +156,7 @@ header {
     border-right: 1px solid rgba(0, 0, 0, 0.3);
     border-radius: 0 10px 10px 0;
     padding: 1.5% 1%;
-    background-color: rgb(238, 232, 232);
+    background-color: var(--main-background-color);
     height: 100%;
 }
 
@@ -147,19 +188,21 @@ header {
     margin: 0 5px;
 }
 
-
-/* Trasitions */
-
 .sidebar-item:hover {
     background-color: #c2bebea1;
     border-radius: 8px;
     transition: all 0.25s;
+    transform: scale(1.05);
 }
 
-#search-bar:focus {
-    border-bottom-color: rgb(121, 116, 116);
-    transition: all 0.33s;
-    transform: scale(1.05);
+span.material-icons-sharp {
+    transition: all 0.25s;
+}
+
+.sidebar-item:hover span.material-icons-sharp {
+    color: var(--priority-4-color);
+    transition: all 0.25s;
+    transform: scale(1.15);
 }
 
 
@@ -361,7 +404,6 @@ header {
 
 .calendar:before {
     position: absolute;
-    top: 3px;
     left: 3px;
     content: attr(data-date);
     display: inline-block;

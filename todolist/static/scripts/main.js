@@ -63,7 +63,7 @@ function isDictEmpty(obj) {
     return Object.keys(obj).length === 0;
 }
 
-// Производим вызов функции после полной загрузки страницы
+// Производим вызов функций после полной загрузки страницы
 document.addEventListener('DOMContentLoaded', function() {
     ColorCardsByPriority();
     changeDateFormat("add");
@@ -143,7 +143,7 @@ function createEditFormPattern(data) {
         '">',
         '</p>',
         '<p class="fload-end">',
-        '<input class="btn btn-primary" id="submit" name="submit" type="submit" value="Submit">',
+        '<input class="btn btn-primary float-end" id="submit" name="submit" type="submit" value="Submit">',
         '</p>',
         '</form>',
         '</div>',
@@ -170,22 +170,20 @@ function editTask(id) {
     }).then(function(response) {
         response.json().then(function(data) {
             let form = createEditFormPattern(data);
-            // form = new DOMParser().parseFromString(form, 'text/html').body.firstChild;
             node.innerHTML = form;
 
             // Активируем форму
             let editModal = document.getElementById('EditTaskModal');
             let bsModal = new bootstrap.Modal(editModal);
-            bsModal.show();
             changeDateFormat("edit");
             // Выбираем чекбокс в зависимости от заданной приоритетности задачи
             document.querySelector(`div[id="EditTaskModal"] label[class="checkbox"] input[value="${data["priority"]}"]`).checked = true;
+            bsModal.show();
 
             // Фокусируеся на поле редактирования после открытия формы
             editModal.addEventListener('shown.bs.modal', function() {
                 document.getElementById('editTaskName').focus();
             })
-
         });
     });
 }

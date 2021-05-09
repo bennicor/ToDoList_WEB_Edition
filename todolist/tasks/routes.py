@@ -61,8 +61,6 @@ def complete_task():
 @tasks.route('/tasks/<int:task_id>',  methods=['GET', 'POST'])
 @login_required
 def edit_task(task_id):
-    form = TaskForm()
-
     # Если пользователь получает данные, то заполняем форму текующими данными о задаче
     if request.method == "GET":
         task, db_sess = get_task(task_id, current_user)
@@ -75,7 +73,6 @@ def edit_task(task_id):
     # Если пользователь отправил обновленные данные
     if request.method == "POST":
         data = request.form
-        
         task, db_sess = get_task(task_id, current_user)
         
         if task:
