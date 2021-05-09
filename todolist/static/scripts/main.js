@@ -40,7 +40,7 @@ function ColorCardsByPriority() {
 let myModal = document.getElementById('AddTaskModal');
 
 myModal.addEventListener('shown.bs.modal', function() {
-    document.getElementById('addTaskName').focus();
+    focusCaretAtEnd(document.getElementById("addTaskName"));
 })
 
 // Task completion implementation
@@ -61,6 +61,14 @@ function completeTask(id) {
 
 function isDictEmpty(obj) {
     return Object.keys(obj).length === 0;
+}
+
+function focusCaretAtEnd(elem) {
+    let elemLen = elem.value.length;
+
+    elem.selectionStart = elemLen;
+    elem.selectionEnd = elemLen;
+    elem.focus();
 }
 
 // Производим вызов функций после полной загрузки страницы
@@ -182,7 +190,7 @@ function editTask(id) {
 
             // Фокусируеся на поле редактирования после открытия формы
             editModal.addEventListener('shown.bs.modal', function() {
-                document.getElementById('editTaskName').focus();
+                focusCaretAtEnd(document.getElementById("editTaskName"))
             })
         });
     });
