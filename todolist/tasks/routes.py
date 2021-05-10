@@ -5,7 +5,7 @@ from todolist import db_session
 from .forms import TaskForm
 from todolist.models import Task, TaskSchema
 from itertools import groupby
-from todolist.db.db_tasks_queries import get_today_tasks, get_upcoming_tasks, get_task
+from todolist.db_tasks_queries import get_today_tasks, get_upcoming_tasks, get_task
 
 
 tasks = Blueprint("tasks", __name__)

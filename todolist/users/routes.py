@@ -8,8 +8,8 @@ from todolist.helpers import save_picture, weekdays
 from todolist.models import Task, User
 from todolist.tasks.forms import TaskForm
 from todolist.users.forms import LoginForm, RegistrationForm, UpdateAccountForm
-from todolist.db.db_user_queries import create_user, get_user
-from todolist.db.db_tasks_queries import (get_today_tasks, get_upcoming_tasks,
+from todolist.db_user_queries import create_user, get_user
+from todolist.db_tasks_queries import (get_today_tasks, get_upcoming_tasks,
                                           get_weekly_completed_tasks, get_all_completed, add_task)
 
 
@@ -33,7 +33,7 @@ def register():
         user = create_user(name=form.name.data,
                            email=form.email.data,
                            password=form.password.data,
-                           image_file=picture_file)
+                           profile_image=picture_file)
         return redirect(url_for("users.login"))
     return render_template("register.html", title="Register", form=form)
 
