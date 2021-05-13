@@ -36,11 +36,20 @@ function ColorCardsByPriority() {
     });
 }
 
-// Фокусируем на поле ввода при открытии формы
-let myModal = document.getElementById('AddTaskModal');
+function afterModalTransition(element) {
+    element.setAttribute("style", "display: none !important;");
+}
 
-myModal.addEventListener('shown.bs.modal', function() {
+// Фокусируем на поле ввода при открытии формы
+let addModal = document.getElementById('AddTaskModal');
+
+addModal.addEventListener('shown.bs.modal', function() {
     focusCaretAtEnd(document.getElementById("addTaskName"));
+})
+
+// Ожидаем завершения анимации и скрываем форму после закрытия
+addModal.addEventListener("hidden.bs.modal", function() {
+    setTimeout(() => afterModalTransition(this), 400);
 })
 
 // Task completion implementation
@@ -75,14 +84,14 @@ function focusCaretAtEnd(elem) {
 document.addEventListener('DOMContentLoaded', function() {
     ColorCardsByPriority();
     changeDateFormat("add");
-}, false);
+});
 
 // При вводе в поисковое поле вызываем функцию fetchSearch
 document.getElementById("search-bar").oninput = function() {
-    const textToFind = this.value.trim();
+    const textToFind = this.value;
 
     // Поиск начнется только если в строке есть символы
-    if (textToFind.match(/^[a-z0-9а-я]*$/i)) {
+    if (textToFind.match(/^(?<=^)[a-z0-9а-я ]*$/gmi)) {
         searchData(textToFind, '/search_request');
     }
 };
@@ -101,7 +110,7 @@ function createEditFormPattern(data) {
     let today = year + '-' + month + '-' + day
 
     let pattern = [
-        '<div class="modal fade" id="EditTaskModal" tabindex="-1" aria-labelledby="EditTaskModal" aria-hidden="true">',
+        '<div class="modal d-block" id="EditTaskModal" tabindex="-1" aria-labelledby="EditTaskModal" aria-hidden="true" style="display: none !important;">',
         '<div class="modal-dialog">',
         '<div class="modal-content">',
         '<div class="modal-header">',
@@ -192,6 +201,12 @@ function editTask(id) {
             editModal.addEventListener('shown.bs.modal', function() {
                 focusCaretAtEnd(document.getElementById("editTaskName"))
             })
+
+            // Ожидаем завершения анимации и скрываем форму после закрытия
+            editModal.addEventListener("hidden.bs.modal", function() {
+                setTimeout(() => afterModalTransition(this), 400);
+            })
+
         });
     });
 }
