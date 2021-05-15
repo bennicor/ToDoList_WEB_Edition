@@ -161,6 +161,7 @@ function createEditFormPattern(data) {
         '</p>',
         '<p class="fload-end">',
         '<input class="btn btn-primary float-end" id="submit" name="submit" type="submit" value="Submit">',
+        '<button type="button" class="btn btn-secondary float-end me-2" data-bs-dismiss="modal">Close</button>',
         '</p>',
         '</form>',
         '</div>',
@@ -173,19 +174,41 @@ function createEditFormPattern(data) {
     return pattern.join("");
 }
 
+function createDeleteFormPattern(data) {
+    let pattern = ['<div class="modal" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModal" aria-hidden="true">',
+        '<div class="modal-dialog">',
+        '<div class="modal-content">',
+        '<div class="modal-header">',
+        '<h5 class="modal-title">Are you sure?</h5>',
+        '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>',
+        '<div class="modal-body">',
+        '<p>Are you sure you want to delete <b>',
+        data["title"],
+        '</b> ?</p></div>',
+        '<div class="modal-footer">',
+        '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>',
+        '<button type="button" class="btn btn-danger" onclick=location.href="/tasks_delete/',
+        data["id"],
+        '">Delete</button>',
+        '</div></div></div ></div>'
+    ]
+
+    return pattern.join("");
+}
+
 // Создаем форму редактирования задачи
 function editTask(id) {
-    let node = document.querySelector("#editModal");
-
-    // Запрашиваем данные задачи по id
-    // и заполняем ими форму
     fetch(`/tasks/${id}`, {
         method: "GET",
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
         }
     }).then(function(response) {
         response.json().then(function(data) {
+            let node = document.querySelector("#editModal");
+
+            // Запрашиваем данные задачи по id
+            // и заполняем ими форму
             let form = createEditFormPattern(data);
             node.innerHTML = form;
 
@@ -206,6 +229,28 @@ function editTask(id) {
             editModal.addEventListener("hidden.bs.modal", function() {
                 setTimeout(() => afterModalTransition(this), 400);
             })
+        });
+    });
+}
+
+// Вызываем форму подтверждения при удалении
+function deleteTask(id) {
+    fetch(`/tasks/${id}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then(function(response) {
+        response.json().then(function(data) {
+            let node = document.querySelector("#deleteModal");
+
+            let form = createDeleteFormPattern(data);
+            node.innerHTML = form;
+
+            // Активируем форму
+            let deleteModal = document.getElementById('deleteTaskModal');
+            let bsModal = new bootstrap.Modal(deleteModal);
+            bsModal.show();
 
         });
     });

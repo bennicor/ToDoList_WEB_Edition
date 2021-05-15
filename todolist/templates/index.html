@@ -29,7 +29,7 @@
                         Done
                     </button>
                     <button class="btn btn-info" onclick="editTask('{{ item.id }}')">Edit</button>
-                    <button class="btn btn-danger" onclick=location.href="{{ url_for('tasks.delete_task', task_id=item.id) }}">Delete</button>
+                    <button class="btn btn-danger" onclick="deleteTask('{{ item.id }}')">Delete</button>
                 </div>
             </div>
         </div>
@@ -86,6 +86,7 @@
                         <input id="addTaskCalendar" class="calendar" type="date" name="calendar" onchange="changeDateFormat('add')" value="{{ today }}" min="{{ today }}">
                     </p>
                     <p class="float-end">{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+                    <button type="button" class="btn btn-secondary float-end me-2" data-bs-dismiss="modal">Close</button>
                 </form>
             </div>
         </div>
@@ -93,6 +94,7 @@
 </div>
 
 <div id="editModal"></div>
+<div id="deleteModal"></div>
 {% endblock content %} 
 {% block script %}
 <script src="{{ url_for('static', filename='scripts/today.js') }}"></script>
