@@ -1,6 +1,7 @@
 import secrets, os
 from PIL import Image
 from pathlib import Path
+from random import randint
 
 
 # Возвращает список дней за последнюю неделю с заданного дня
@@ -27,3 +28,8 @@ def save_picture(form_picture):
     i.save(picture_path)
 
     return picture_fn
+
+def random_with_N_digits(n):
+    range_start = 1
+    range_end = 10 ** n - 1
+    return randint(range_start, range_end)

@@ -1,7 +1,7 @@
 from todolist import db_session
 from todolist.models import Task
 from datetime import datetime
-from flask import flash, request
+from flask import request
 from sqlalchemy import func
 
 
@@ -11,7 +11,7 @@ def get_task(id, user):
     task = db_sess.query(Task).filter(Task.id == id,
                                       Task.user_id == user.id).first()
     
-    return task, db_sess
+    return task
 
 
 def get_today_tasks(user, searchbox=None):
@@ -87,4 +87,3 @@ def add_task(form, user):
     tasks.user_id = user.id
     db_sess.add(tasks)
     db_sess.commit()
-    flash("Task has been added!", "success")

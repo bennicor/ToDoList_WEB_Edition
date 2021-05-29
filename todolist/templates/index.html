@@ -16,7 +16,7 @@
             <div class="card-body">
                 <h5 class="card-title">{{ item.title }}</h5>
                 <p class="card-text">
-                    Priority: <span name="priority">{{ item.priority }}</span>
+                    Priority: <span id="priority">{{ item.priority }}</span>
                 </p>
                 <div class="btn-group">
                     <button
@@ -93,8 +93,83 @@
     </div>
 </div>
 
-<div id="editModal"></div>
-<div id="deleteModal"></div>
+<div class="modal d-block" id="EditTaskModal" tabindex="-1" aria-labelledby="EditTaskModal" aria-hidden="true" style="display: none !important;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+        
+            <div class="modal-body">
+                <form action="{FORM-URL}" method="post">
+                    <p>
+                        <label for="title">Title</label>
+                        <input class="form-control" id="editTaskName" name="title" required type="text" value="{TITLE}">
+                    </p>
+                    <p>
+                        <label for="priority">Priority</label>
+                    </p>
+                    <div class="priority-choice">
+                        <div class="priority-unit">
+                            <label class="checkbox">
+                                <input type="radio" name="priority" value="1">
+                                <span class="checkmark">1</span>
+                            </label>
+                        </div>
+                        <div class="priority-unit">
+                            <label class="checkbox">
+                                <input type="radio" name="priority" value="2">
+                                <span class="checkmark">2</span>
+                            </label>
+                        </div>
+                        <div class="priority-unit">
+                            <label class="checkbox">
+                                <input type="radio" name="priority" value="3">
+                                <span class="checkmark">3</span>
+                            </label>
+                        </div>
+                        <div class="priority-unit">
+                            <label class="checkbox">
+                                <input type="radio" name="priority" value="4">
+                                <span class="checkmark">4</span>
+                            </label>
+                        </div>
+                    </div>
+                    <p></p>
+                    <p>
+                        <label for="scheduled_date">Schedule Task</label>
+                        </br>
+                        <input id="editTaskCalendar" class="calendar" type="date" name="calendar" value="{{ today }}" onchange="changeDateFormat('edit')" min="{{ today }}">
+                    </p>
+                    <p class="float-end">
+                        <input class="btn btn-primary float-end" name="submit" type="submit" value="Submit">
+                        <button type="button" class="btn btn-secondary float-end me-2" data-bs-dismiss="modal">Close</button>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal d-block" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModal" aria-hidden="true" style="display: none !important;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+                <p>Are you sure you want to delete <b id="deleteText">{TASK}</b>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" onclick={URL}>Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %} 
 {% block script %}
 <script src="{{ url_for('static', filename='scripts/today.js') }}"></script>

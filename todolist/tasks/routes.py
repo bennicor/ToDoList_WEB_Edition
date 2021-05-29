@@ -1,11 +1,11 @@
 from flask import Flask, render_template, redirect, url_for, request, abort, jsonify, session, make_response, Blueprint, flash
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from datetime import datetime
-from todolist import db_session
 from .forms import TaskForm
 from todolist.models import Task, TaskSchema
 from itertools import groupby
 from todolist.db_tasks_queries import get_today_tasks, get_upcoming_tasks, get_task
+from todolist import db_session
 
 
 tasks = Blueprint("tasks", __name__)
@@ -45,12 +45,12 @@ def search_request():
 def complete_task():
     task_id = int(request.get_json())  # Получаем id, выполненной задачи
 
-    task, db_sess = get_task(task_id, current_user)
+    db_sess = db_session.create_session()
+    task = get_task(task_id, current_user)
 
-    if task:  # Отмечаем задачу завершенной
-        task.done = True
-        task.completed_date = datetime.now().date()
-        db_sess.commit()
+    task.done = True
+    task.completed_date = datetime.now().date()
+    db_sess.commit()
 
     # Возвращаем адрес страницы, на которую надо будет отправить пользователя
     response = {"url": session["url"]}
@@ -63,17 +63,15 @@ def complete_task():
 def edit_task(task_id):
     # Если пользователь получает данные, то заполняем форму текующими данными о задаче
     if request.method == "GET":
-        task, db_sess = get_task(task_id, current_user)
+        task = get_task(task_id, current_user)
 
-        if task:
-            return make_response(jsonify(TaskSchema().dump(task)), 200)
-        else:
-            abort(404)
+        return make_response(jsonify(TaskSchema().dump(task)), 200)
 
     # Если пользователь отправил обновленные данные
     if request.method == "POST":
         data = request.form
-        task, db_sess = get_task(task_id, current_user)
+        db_sess = db_session.create_session()
+        task = get_task(task_id, current_user)
         
         if task:
             task.title = data.get("title")
@@ -89,13 +87,11 @@ def edit_task(task_id):
 @tasks.route("/tasks_delete/<int:task_id>", methods=["GET", "POST"])
 @login_required
 def delete_task(task_id):
-    task, db_sess = get_task(task_id, current_user)
+    db_sess = db_session.create_session()
+    task = get_task(task_id, current_user)
 
-    if task:
-        db_sess.delete(task)
-        db_sess.commit()
-        flash("Task has been deleted!", "danger")
-        # Перенаправляет на прошлую страницу
-        return redirect(session["url"])
-    else:
-        abort(404)
+    db_sess.delete(task)
+    db_sess.commit()
+    flash("Task has been deleted!", "danger")
+    # Перенаправляет на прошлую страницу
+    return redirect(session["url"])

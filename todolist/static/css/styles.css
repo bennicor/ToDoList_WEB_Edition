@@ -55,6 +55,16 @@ a:hover {
 
 /* Bootstrap Classes Reassign */
 
+.btn-primary {
+    background-color: #7565F0;
+    color: white;
+}
+
+.btn-primary:hover {
+    color: white;
+    background-color: #5a46da;
+}
+
 .container-fluid {
     padding: 0;
     position: absolute;
@@ -136,7 +146,7 @@ header {
     margin-right: 10px;
 }
 
-.account-img {
+.nav-img {
     width: 60px;
     height: 60px;
 }
@@ -257,15 +267,8 @@ span.material-icons-sharp {
 .content-title .btn-primary {
     width: 200px;
     height: 55px;
-    background-color: #7565F0;
-    color: white;
     font-weight: 500;
     font-size: 1.1em;
-}
-
-.content-title .btn-primary:hover {
-    color: white;
-    background-color: #5a46da;
 }
 
 .content {
@@ -319,7 +322,7 @@ span.material-icons-sharp {
 
 /* Dashboard */
 
-.big-img {
+.dashboard-img {
     width: 250px;
     height: 250px;
     margin-bottom: 20px;
@@ -329,6 +332,49 @@ span.material-icons-sharp {
 .table {
     margin: auto;
     margin-bottom: 40px;
+}
+
+
+/* Friends Page */
+
+#friends-nav {
+    height: 50px;
+    background-color: red;
+    width: 100%;
+}
+
+#add-friend-block {
+    background-color: #D6C6C1;
+}
+
+#add-friend-block .row>* {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#friend-code {
+    width: 70%;
+}
+
+#results {
+    width: 70%;
+    margin: auto;
+}
+
+#results form {
+    flex-direction: row!important;
+}
+
+#results .btn-primary {
+    width: 250px;
+}
+
+.search-profile-img {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 20px;
 }
 
 

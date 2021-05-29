@@ -1,10 +1,28 @@
-// Изменение формата даты, отображаемого в календаре
 const dateOptions = {
     year: 'numeric',
     month: 'long',
     day: '2-digit'
-};
+}
 
+const picsPath = "/static/profile_pics/";
+
+const cardsColors = {
+    1: "#E63E22",
+    2: "#F0EB65",
+    3: "#66D9B8",
+    4: "#8965F0"
+}
+const request_urls = {
+    "search": "/search_request",
+    "task": "/tasks/",
+    "deleteTask": "/tasks_delete/",
+    "completeTask": "/complete_task",
+    "addFriend": "/add_friend/",
+    "removeFriend": "/remove_friend/",
+    "getFriend": "/show_friend"
+}
+
+// Изменение формата даты, отображаемого в календаре
 function changeDateFormat(type) {
     // Изменяем формат даты в календаре в зависимости от выбранной формы
     if (type == "add") {
@@ -18,6 +36,7 @@ function changeDateFormat(type) {
     calendar.setAttribute("data-date", formatedDate);
 }
 
+
 // Отключаем флеш уведомления через опредленное количество секунд
 window.setTimeout(function() {
     let alert = document.getElementById("alert");
@@ -27,193 +46,68 @@ window.setTimeout(function() {
 
 
 // Изменяем цвет карточек в соответсвии со значением приоритетности
-const cardsColors = { 1: "#E63E22", 2: "#F0EB65", 3: "#66D9B8", 4: "#8965F0" }
-
 function ColorCardsByPriority() {
     document.querySelectorAll(".card").forEach(card => {
-        cardPriority = parseInt(card.querySelector("span[name='priority']").innerHTML, 10);
+        cardPriority = parseInt(card.querySelector("span[id='priority']").innerHTML, 10);
         card.style.backgroundColor = cardsColors[cardPriority];
     });
 }
 
+// Декоративные действия с модальными формами
 function afterModalTransition(element) {
     element.setAttribute("style", "display: none !important;");
 }
 
-// Фокусируем на поле ввода при открытии формы
-let addModal = document.getElementById('AddTaskModal');
+function focusCaretAtEnd(elem) {
+    let elemLength = elem.value.length;
 
-addModal.addEventListener('shown.bs.modal', function() {
-    focusCaretAtEnd(document.getElementById("addTaskName"));
-})
-
-// Ожидаем завершения анимации и скрываем форму после закрытия
-addModal.addEventListener("hidden.bs.modal", function() {
-    setTimeout(() => afterModalTransition(this), 400);
-})
-
-// Task completion implementation
-function completeTask(id) {
-    fetch("/complete_task", {
-            method: "POST",
-            body: JSON.stringify(id),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-        .then(function(response) {
-            response.json().then(function(data) {
-                window.location.href = data["url"];
-            });
-        })
+    elem.selectionStart = elemLength;
+    elem.selectionEnd = elemLength;
+    elem.focus();
 }
 
 function isDictEmpty(obj) {
     return Object.keys(obj).length === 0;
 }
 
-function focusCaretAtEnd(elem) {
-    let elemLen = elem.value.length;
-
-    elem.selectionStart = elemLen;
-    elem.selectionEnd = elemLen;
-    elem.focus();
-}
-
-// Производим вызов функций после полной загрузки страницы
-document.addEventListener('DOMContentLoaded', function() {
-    ColorCardsByPriority();
-    changeDateFormat("add");
-});
-
-// При вводе в поисковое поле вызываем функцию fetchSearch
-document.getElementById("search-bar").oninput = function() {
-    const textToFind = this.value;
-
-    // Поиск начнется только если в строке есть символы
-    if (textToFind.match(/^(?<=^)[a-z0-9а-я ]*$/gmi)) {
-        searchData(textToFind, '/search_request');
-    }
-};
-
-// Создаем форму редактирования задачи
-function createEditFormPattern(data) {
-    // Создаем сегодняшнюю дату для ограничения в календаре
-    let currentDate = new Date();
-    let year = currentDate.getFullYear(),
-        month = currentDate.getMonth() + 1,
-        day = currentDate.getDate();
-
-    if (day < 10) day = '0' + day
-    if (month < 10) month = '0' + month
-
-    let today = year + '-' + month + '-' + day
-
-    let pattern = [
-        '<div class="modal d-block" id="EditTaskModal" tabindex="-1" aria-labelledby="EditTaskModal" aria-hidden="true" style="display: none !important;">',
-        '<div class="modal-dialog">',
-        '<div class="modal-content">',
-        '<div class="modal-header">',
-        '<h5 class="modal-title">Edit Task</h5>',
-        '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>',
-        '<div class="modal-body">',
-        '<form action="/tasks/',
-        data["id"],
-        '" method="post">',
-        '<p><label for="title">Title</label>',
-        '<input class="form-control" id="editTaskName" name="title" required type="text" value="',
-        data["title"],
-        '"></p>',
-        '<p><label for="priority">Priority</label></p>',
-        '<div class="priority-choice">',
-        '<div class="priority-unit">',
-        '<label class="checkbox">',
-        '<input type="radio"name="priority" value="1">',
-        '<span class="checkmark">1</span>',
-        '</label>',
-        '</div>',
-        '<div class="priority-unit">',
-        '<label class="checkbox">',
-        '<input type="radio"name="priority" value="2">',
-        '<span class="checkmark">2</span>',
-        '</label>',
-        '</div>',
-        '<div class="priority-unit">',
-        '<label class="checkbox">',
-        '<input type="radio"name="priority" value="3">',
-        '<span class="checkmark">3</span>',
-        '</label>',
-        '</div>',
-        '<div class="priority-unit">',
-        '<label class="checkbox">',
-        '<input type="radio"name="priority" value="4">',
-        '<span class="checkmark">4</span>',
-        '</label>',
-        '</div>',
-        '</div>',
-        '<p></p>',
-        '<p><label for="scheduled_date">Schedule Task</label></br>',
-        '<input id="editTaskCalendar" class="calendar" type="date" name="calendar" value="',
-        data["scheduled_date"],
-        `" onchange="changeDateFormat('edit')" min="`,
-        today,
-        '">',
-        '</p>',
-        '<p class="fload-end">',
-        '<input class="btn btn-primary float-end" id="submit" name="submit" type="submit" value="Submit">',
-        '<button type="button" class="btn btn-secondary float-end me-2" data-bs-dismiss="modal">Close</button>',
-        '</p>',
-        '</form>',
-        '</div>',
-        '</div>',
-        '</div>',
-        '</div>',
-        '</div>'
-    ];
-
-    return pattern.join("");
-}
-
-function createDeleteFormPattern(data) {
-    let pattern = ['<div class="modal" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModal" aria-hidden="true">',
-        '<div class="modal-dialog">',
-        '<div class="modal-content">',
-        '<div class="modal-header">',
-        '<h5 class="modal-title">Are you sure?</h5>',
-        '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>',
-        '<div class="modal-body">',
-        '<p>Are you sure you want to delete <b>',
-        data["title"],
-        '</b> ?</p></div>',
-        '<div class="modal-footer">',
-        '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>',
-        '<button type="button" class="btn btn-danger" onclick=location.href="/tasks_delete/',
-        data["id"],
-        '">Delete</button>',
-        '</div></div></div ></div>'
-    ]
-
-    return pattern.join("");
+// Task completion implementation
+function completeTask(id) {
+    fetch(`${request_urls["completeTask"]}`, {
+        method: "POST",
+        body: JSON.stringify(id),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then(function(response) {
+        response.json().then(function(data) {
+            // Перенаправляем пользователя на другую страницу для корректного отображения уведомлений
+            window.location.href = data["url"];
+        });
+    });
 }
 
 // Создаем форму редактирования задачи
 function editTask(id) {
-    fetch(`/tasks/${id}`, {
+    fetch(`${request_urls["task"]}${id}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json"
         }
     }).then(function(response) {
         response.json().then(function(data) {
-            let node = document.querySelector("#editModal");
+            // Заполняем форму данными 
+            const editModal = document.getElementById("EditTaskModal");
 
-            // Запрашиваем данные задачи по id
-            // и заполняем ими форму
-            let form = createEditFormPattern(data);
-            node.innerHTML = form;
+            form = editModal.querySelector("form");
+            form.setAttribute("action", `${request_urls["task"]}${data["id"]}`);
+
+            input = editModal.querySelector("#editTaskName");
+            input.setAttribute("value", `${data["title"]}`);
+
+            date = editModal.querySelector("#editTaskCalendar");
+            date.setAttribute("value", `${data["scheduled_date"]}`);
 
             // Активируем форму
-            let editModal = document.getElementById('EditTaskModal');
             let bsModal = new bootstrap.Modal(editModal);
             changeDateFormat("edit");
             // Выбираем чекбокс в зависимости от заданной приоритетности задачи
@@ -221,8 +115,8 @@ function editTask(id) {
             bsModal.show();
 
             // Фокусируеся на поле редактирования после открытия формы
-            editModal.addEventListener('shown.bs.modal', function() {
-                focusCaretAtEnd(document.getElementById("editTaskName"))
+            editModal.addEventListener('show.bs.modal', function() {
+                focusCaretAtEnd(document.getElementById("editTaskName"));
             })
 
             // Ожидаем завершения анимации и скрываем форму после закрытия
@@ -235,23 +129,30 @@ function editTask(id) {
 
 // Вызываем форму подтверждения при удалении
 function deleteTask(id) {
-    fetch(`/tasks/${id}`, {
+    fetch(`${request_urls["task"]}${id}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json"
         }
     }).then(function(response) {
         response.json().then(function(data) {
-            let node = document.querySelector("#deleteModal");
+            const deleteModal = document.getElementById("deleteTaskModal");
 
-            let form = createDeleteFormPattern(data);
-            node.innerHTML = form;
+            textBody = deleteModal.querySelector("#deleteText");
+            // Вставляем в тело формы название задачи
+            textBody.innerHTML = `${data["title"]}`;
+
+            button = deleteModal.querySelector(".btn-danger");
+            button.setAttribute("onclick", `location.href="${request_urls["deleteTask"]}${data["id"]}"`);
 
             // Активируем форму
-            let deleteModal = document.getElementById('deleteTaskModal');
             let bsModal = new bootstrap.Modal(deleteModal);
             bsModal.show();
 
+            // Ожидаем завершения анимации и скрываем форму после закрытия
+            deleteModal.addEventListener("hidden.bs.modal", function() {
+                setTimeout(() => afterModalTransition(this), 400);
+            })
         });
     });
 }

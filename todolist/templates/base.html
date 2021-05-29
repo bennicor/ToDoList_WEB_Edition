@@ -99,7 +99,7 @@
                             {% set image_file = url_for('static', filename='profile_pics/' + current_user.image_file) %}
                             <a href="{{ url_for("users.dashboard") }}" class="float-end">
                                 <p class="username">{{ current_user.name }}</p>
-                                <img class="rounded-circle account-img" src="{{ image_file }}">
+                                <img class="rounded-circle nav-img" src="{{ image_file }}">
                             </a>
                         </div>
                     </div>
@@ -125,7 +125,13 @@
                             <div class="sidebar-item">
                                 <a href="{{ url_for("users.dashboard") }}">
                                     <span class="material-icons-sharp">analytics</span>
-                                    <p>Statistics</p>
+                                    <p>Dashboard</p>
+                                </a>
+                            </div>
+                            <div class="sidebar-item">
+                                <a href="{{ url_for("users.friends") }}">
+                                    <span class="material-icons-sharp">person</span>
+                                    <p>Friends</p>
                                 </a>
                             </div>
                             <div class="sidebar-item">
@@ -178,4 +184,5 @@
         {% block script %}{% endblock %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js" integrity="sha384-lpyLfhYuitXl2zRZ5Bn2fqnhNAKOAaM/0Kr9laMspuaMiZfGmfwRNFh8HlMy49eQ" crossorigin="anonymous"></script>
         <script src="{{ url_for('static', filename='scripts/main.js') }}"></script>
+        <script src="{{ url_for('static', filename='scripts/patterns.js') }}"></script>
 </html>

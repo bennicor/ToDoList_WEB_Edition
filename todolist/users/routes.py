@@ -1,16 +1,17 @@
 from datetime import datetime, timedelta
 from itertools import groupby
 from flask import (Blueprint, Flask, flash, redirect, render_template, request,
-                   session, url_for)
+                   session, url_for, make_response, jsonify)
 from flask_login import current_user, login_required, login_user, logout_user
-from todolist import db_session
 from todolist.helpers import save_picture, weekdays
-from todolist.models import Task, User
+from todolist.models import Task, User, UserSchema
+from todolist import db_session
 from todolist.tasks.forms import TaskForm
 from todolist.users.forms import LoginForm, RegistrationForm, UpdateAccountForm
 from todolist.db_user_queries import create_user, get_user
 from todolist.db_tasks_queries import (get_today_tasks, get_upcoming_tasks,
                                           get_weekly_completed_tasks, get_all_completed, add_task)
+from todolist import db_session
 
 
 users = Blueprint('users', __name__)
@@ -46,7 +47,7 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user, _ = get_user(email=form.email.data)
+        user = get_user(email=form.email.data)
 
         # Проверяем если пользователь есть в базе данных и пароли совпадают
         if user and user.check_password(form.password.data):
@@ -82,6 +83,7 @@ def tasks():
 
     if form.validate_on_submit():
         add_task(form, current_user)
+        flash("Task has been added!", "success")
         return redirect(session.get("url"))
 
     tasks = get_today_tasks(current_user)
@@ -117,6 +119,7 @@ def upcoming_tasks():
 def dashboard():
     # Находим дату недельной давности
     last_week_date = datetime.now().date() - timedelta(6)
+    session["url"] = url_for("users.dashboard")
 
     # Запрашиваем количество выполненных задач за последнуюю неделю
     tasks = get_weekly_completed_tasks(current_user, last_week_date)
@@ -128,16 +131,14 @@ def dashboard():
 
     completed_tasks = get_all_completed(current_user)
 
-    # Загружаем фотографию профиля пользователя
-    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
-
-    return render_template('dashboard.html', title="Dashboard", tasks=data, completed=completed_tasks, image_file=image_file)
+    return render_template('dashboard.html', title="Dashboard", tasks=data, completed=completed_tasks)
 
 
 @users.route("/update_account", methods=["GET", "POST"])
 @login_required
 def update_account():
     form = UpdateAccountForm()
+    session["url"] = url_for("users.update_account")
 
     # Если пользователь получает данные, то заполняем форму текующими данными о профиле
     if request.method == "GET":
@@ -146,7 +147,8 @@ def update_account():
 
     # Если форма готова к отправке, обновляем информацию на актульную
     if form.validate_on_submit():
-        user, db_sess = get_user(current_user)
+        user = get_user(user_id=current_user.id)
+        db_sess = db_session.create_session()
 
         # Если пользователь заменил фотографию - меняем ее
         if form.image_file.data:
@@ -164,3 +166,65 @@ def update_account():
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
 
     return render_template('update_account.html', title='Edit Account Info', form=form)
+
+
+@users.route("/friends", methods=["GET", "POST"])
+@login_required
+def friends():
+    session["url"] = url_for("users.friends")
+    code = current_user.friend_code
+    # Отображаем список всех друзей кроме самого пользователя
+    friends = list(filter(lambda user: user.friend_code != code, current_user.friend.all()))
+    return render_template("friends.html", title="Your Friends", user_code=code, friends=friends)
+
+
+@users.route("/show_friend", methods=["POST"])
+@login_required
+def show_friend():
+    friend_code = request.get_json()
+    
+    # Сериализируем объект пользователя перед отправкой
+    friend, user = get_user(friend_code=friend_code), {}
+
+    if friend:
+        # Проверяем если этот пользователь находится у нас в друзьях
+        user = get_user(user_id=current_user.id)
+        friends = user.friend.all()
+    
+        user = UserSchema().dump(friend)
+        user["are_friends"] = friend in friends
+    return make_response(jsonify(user), 200)
+
+
+# Добавляем найденного по коду пользователя в друзья
+@users.route("/add_friend/<int:friend_id>", methods=["GET"])
+@login_required
+def add_friend(friend_id):
+    db_sess = db_session.create_session()
+    friend = get_user(user_id=friend_id)
+    user = get_user(user_id=current_user.id)
+
+    # Проверяем чтобы пользователи не были друзьями изначально
+    if not user.are_friends(friend):
+        user.send_friend_request(friend)
+        db_sess.commit()
+        flash("Request is sent", "success")
+        print(friend.pending.all())
+    else:
+        flash("Already friends!", "danger")
+
+    return redirect(session["url"])
+
+
+@users.route("/remove_friend/<int:friend_id>", methods=["GET"])
+@login_required
+def remove_friend(friend_id):
+    db_sess = db_session.create_session()
+    friend = get_user(user_id=friend_id)
+    user = get_user(user_id=current_user.id)
+
+    user.unfriend(friend)
+    db_sess.commit()
+    flash("Friend deleted!", "success")
+
+    return redirect(session["url"])

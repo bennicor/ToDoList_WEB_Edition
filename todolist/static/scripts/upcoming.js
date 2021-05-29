@@ -1,90 +1,78 @@
-// Создаем HTML pattern для элемента, который будет отображаться
-function createTaskPattern(data) {
-    var pattern = [
-        '<div class="card">',
-        '<div class="card-body">',
-        '<h5 class="card-title">',
-        data["title"],
-        '</h5>',
-        '<p class="card-text">Priority: <span name="priority">',
-        data["priority"],
-        '</span></p>',
-        '<div class="btn-group">',
-        '<button type="button" class="btn btn-success" data-toggle="button" autocomplete="off" onclick=completeTask(',
-        data["id"],
-        ')>Done</button>',
-        '<button class="btn btn-info" onclick=location.href="/tasks/',
-        data["id"],
-        '"> Edit </button>',
-        '<button class="btn btn-danger" onclick=location.href="/tasks_delete/',
-        data["id"],
-        '">Delete</button>',
-        "</div>",
-        "</div>",
-        "</div>"
-    ];
+// При вводе в поисковое поле вызываем функцию searchData
+document.getElementById("search-bar").oninput = function() {
+    const textToFind = this.value;
 
-    return pattern.join("");
-}
+    searchData(textToFind, request_urls["search"]);
+};
 
-function createTaskDatePattern(date) {
-    var pattern = [
-        '<div class="date-group">',
-        '<h1>',
-        date,
-        "</h1>",
-        '<div class="cards">'
-    ];
-
-    return pattern.join("");
-}
-
-// Search Implementation
 // Отправляем HTTP запрос в python функцию
 // и получаем оттуда информацию из базы данных
 // В теле запроса передаем содержимое поисковой строки
 function searchData(text, url) {
     const tasks = document.querySelector("#tasks");
+    const errorMessage = document.createElement("p");
 
     fetch(url, {
-            method: "POST",
-            body: JSON.stringify(text),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-        .then(function(response) {
-            if (!response.ok) {
-                throw Error(response.statusText);
+        method: "POST",
+        body: JSON.stringify(text),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    }).then(function(response) {
+        if (!response.ok) {
+            throw Error(response.statusText);
+        }
+
+        response.json().then(function(data) {
+            let date = "",
+                cards = "",
+                pattern = "",
+                nodes = document.createElement("div");
+
+            if (!isDictEmpty(data)) {
+                // Создаем шаблон группы карточек
+                for (var key in data) {
+                    formatedDate = new Date(key).toLocaleDateString("ru-RU");
+                    date = createTaskDatePattern(formatedDate);
+                    cards = document.createElement("div");
+                    cards.setAttribute("class", "cards");
+
+                    for (let [_, value] of Object.entries(data[key])) {
+                        pattern = createTaskPattern(value);
+                        cards.appendChild(pattern);
+                    }
+
+                    date.appendChild(cards);
+                    nodes.appendChild(date);
+                }
+            } else {
+                errorMessage.innerHTML = 'Nothing found';
+                nodes.appendChild(errorMessage);
             }
 
-            response.json().then(function(data) {
-                let date = "",
-                    pattern = "",
-                    nodes = "";
-
-                if (!isDictEmpty(data)) {
-                    for (var key in data) {
-                        formatedDate = new Date(key).toLocaleDateString("ru-RU");
-                        date = createTaskDatePattern(formatedDate);
-                        nodes += date;
-
-                        for (let [_, value] of Object.entries(data[key])) {
-                            pattern = createTaskPattern(value);
-                            nodes += pattern;
-                        }
-
-                        nodes += "</div></div>";
-                    }
-                } else {
-                    nodes = 'Nothing found';
-                }
-
-                tasks.innerHTML = nodes;
-                ColorCardsByPriority();
-            });
-        })
-        .catch(function(error) {
-            tasks.innerHTML = `Failed to load. Reason: ${ error.message }`;
+            tasks.innerHTML = nodes.innerHTML;
+            ColorCardsByPriority();
         });
+    }).catch(function(error) {
+        errorMessage.innerHTML = `Failed to load. Reason: ${error.message}`;
+        tasks.innerHTML = errorMessage.innerHTML;
+    });
 }
+
+// Фокусируем на поле ввода при открытии формы
+let addModal = document.getElementById('AddTaskModal');
+
+addModal.addEventListener('shown.bs.modal', function() {
+    focusCaretAtEnd(document.getElementById("addTaskName"));
+})
+
+// Ожидаем завершения анимации и скрываем форму после закрытия
+addModal.addEventListener("hidden.bs.modal", function() {
+    setTimeout(() => afterModalTransition(this), 400);
+})
+
+// Производим вызов функций после полной загрузки страницы
+document.addEventListener('DOMContentLoaded', function() {
+    ColorCardsByPriority();
+    changeDateFormat("add");
+});

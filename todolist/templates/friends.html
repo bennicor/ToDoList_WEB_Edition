@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="friends-nav">
+</div>
+<div class="container" id="add-friend-block">
+    <div class="row no-gutters my-4">
+        <div class="col-12">
+            <h1>Add a friend</h1>
+        </div>
+    </div>
+
+    <div class="row no-gutters my-4">
+        <div class="col-12">
+            <p>Your Friend Code</p>
+            <h1>{{ user_code }}</h1>
+        </div>
+    </div>
+
+    <div class="row no-gutters my-4">
+        <div class="col-md-12 px-2">
+            <label>Enter your friend's Friend Code to send friend request.</label>
+            <input type="text" class="form-control" id="friend-code" placeholder="Enter a Friend Code">
+        </div>
+    </div>
+
+    <div class="row no-gutters my-3" id="results">
+        <p></p>
+        <form action="" method="get" class="d-none">
+            <div class="col-4">
+                <img
+                    class="search-profile-img mx-auto d-block"
+                    src="{{ url_for('static', filename='profile_pics/default.jpg') }}"
+                />
+            </div>
+            <div class="col-8 text-center my-auto">
+                <h2></h2>
+                <h5></h5>
+                <input class="btn btn-primary" type="submit" value="Add Friend">
+            </div>
+        </form>
+    </div>
+</div>
+<div class="my-5">
+    <h2 class="text-center">Your Friends</h2>
+    <ul>
+        {% for friend in friends %}
+            <li>{{ friend }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endblock content %}
+{% block script %}
+<script src="{{ url_for('static', filename='scripts/friends.js') }}"></script>
+{% endblock script %}
