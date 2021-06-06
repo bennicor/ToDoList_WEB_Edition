@@ -8,7 +8,7 @@ from todolist.models import Task, User, UserSchema
 from todolist import db_session
 from todolist.tasks.forms import TaskForm
 from todolist.users.forms import LoginForm, RegistrationForm, UpdateAccountForm
-from todolist.db_user_queries import create_user, get_user
+from todolist.db_user_queries import create_user, get_user, get_pending
 from todolist.db_tasks_queries import (get_today_tasks, get_upcoming_tasks,
                                           get_weekly_completed_tasks, get_all_completed, add_task)
 from todolist import db_session
@@ -72,6 +72,7 @@ def projects():
     return render_template("projects.html")
 
 
+# Перенести в каталог с задачами
 @users.route("/tasks/today", methods=["GET", "POST"])
 @login_required
 def tasks():
@@ -173,9 +174,9 @@ def update_account():
 def friends():
     session["url"] = url_for("users.friends")
     code = current_user.friend_code
-    # Отображаем список всех друзей кроме самого пользователя
-    friends = list(filter(lambda user: user.friend_code != code, current_user.friend.all()))
-    return render_template("friends.html", title="Your Friends", user_code=code, friends=friends)
+    # Отображаем всех друзей, кроме самого пользователя
+    friends = list(filter(lambda user: user.friend_code != code and user.are_friends(current_user), current_user.friends.all()))
+    return render_template("friends.html", title="Your Friends",user_code=code, friends=friends)
 
 
 @users.route("/show_friend", methods=["POST"])
@@ -184,16 +185,17 @@ def show_friend():
     friend_code = request.get_json()
     
     # Сериализируем объект пользователя перед отправкой
-    friend, user = get_user(friend_code=friend_code), {}
+    friend, result = get_user(friend_code=friend_code), {}
 
     if friend:
         # Проверяем если этот пользователь находится у нас в друзьях
         user = get_user(user_id=current_user.id)
-        friends = user.friend.all()
     
-        user = UserSchema().dump(friend)
-        user["are_friends"] = friend in friends
-    return make_response(jsonify(user), 200)
+        result = UserSchema().dump(friend)
+        result["are_friends"] = user.are_friends(friend)
+        # Проверяем если уже отправили запрос
+        result["is_pending"] = user in get_pending(friend)
+    return make_response(jsonify(result), 200)
 
 
 # Добавляем найденного по коду пользователя в друзья
@@ -204,15 +206,9 @@ def add_friend(friend_id):
     friend = get_user(user_id=friend_id)
     user = get_user(user_id=current_user.id)
 
-    # Проверяем чтобы пользователи не были друзьями изначально
-    if not user.are_friends(friend):
-        user.send_friend_request(friend)
-        db_sess.commit()
-        flash("Request is sent", "success")
-        print(friend.pending.all())
-    else:
-        flash("Already friends!", "danger")
-
+    user.add_friend(friend)
+    db_sess.commit()
+    flash("Request has been sent!", "success")
     return redirect(session["url"])
 
 

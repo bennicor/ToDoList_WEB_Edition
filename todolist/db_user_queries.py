@@ -1,5 +1,5 @@
 from todolist import db_session
-from todolist.models import User
+from todolist.models import User, friendship
 from todolist.helpers import random_with_N_digits
 
 
@@ -19,7 +19,6 @@ def create_user(name, email, password, profile_image):
                 friend_code=code)
     user.set_password(password)
     db_sess.add(user)
-    user.add_friend(user)
     db_sess.commit()
 
 
@@ -34,3 +33,14 @@ def get_user(user_id=None, email=None, friend_code=None):
         user = db_sess.query(User).filter(User.id == user_id).first()
 
     return user
+
+def get_pending(user):
+    db_sess = db_session.create_session()
+
+    # Возвращает список отношений, в которых пользователю была отправлена заявка
+    pending = db_sess.query(friendship.c.user_id).filter(friendship.c.friend_id==user.id).all()
+    
+    # Преобразуем результат
+    result = [get_user(user_id=user[0]) for user in pending]
+
+    return result

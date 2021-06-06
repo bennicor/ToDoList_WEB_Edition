@@ -18,16 +18,10 @@ def load_user(user_id):
 
 
 # Association Table для реализации many-to-many связи
-friends = Table("friends",
+friendship = Table("friendship",
                 SqlAlchemyBase.metadata,
                 Column('user_id', Integer, ForeignKey('users.id')),
-                Column('friend_id', Integer, ForeignKey('users.id'))
-)
-
-pending = Table("pending",
-                SqlAlchemyBase.metadata,
-                Column('user_id', Integer, ForeignKey('users.id')),
-                Column('pending_id', Integer, ForeignKey('users.id'))
+                Column('friend_id', Integer, ForeignKey('users.id')),
 )
 
 
@@ -53,6 +47,7 @@ class TaskSchema(Schema):
     priority = fields.Int()
     scheduled_date = fields.Str()
 
+
 class User(SqlAlchemyBase, UserMixin):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -63,14 +58,9 @@ class User(SqlAlchemyBase, UserMixin):
     created_date = Column(DateTime, default=datetime.datetime.now)
     
     # Список друзей данного пользователя
-    friend = relation('User', secondary=friends,
-        primaryjoin=(friends.c.user_id == id),
-        secondaryjoin=(friends.c.friend_id == id), lazy="dynamic")
-
-    # Список людей, ожадающих добавления в друзья
-    pending = relation("User", secondary=pending,
-        primaryjoin=(pending.c.user_id == id),
-        secondaryjoin=(pending.c.pending_id == id), lazy="dynamic")
+    friends = relation('User', secondary=friendship,
+        primaryjoin=(friendship.c.user_id == id),
+        secondaryjoin=(friendship.c.friend_id == id), lazy="dynamic")
 
     friend_code = Column(Integer, nullable=True)
 
@@ -84,20 +74,21 @@ class User(SqlAlchemyBase, UserMixin):
         return check_password_hash(self.hashed_password, password)
 
     def are_friends(self, user):
-        return self.friend.filter(friends.c.friend_id == user.id).count() == 1
+        # Проверяем на наличие сущностей в списке друзей обоих пользователей
+        return all([self.friends.filter(friendship.c.friend_id == user.id).count() == 1, user.friends.filter(friendship.c.friend_id == self.id).count() == 1])
 
-    def send_friend_request(self, user):
-        user.pending.append(self)
+    def is_pending(self, user):
+        # Если есть вхождение хотя бы в одном списке друзей
+        return self.friends.filter(friendship.c.friend_id == user.id).count() == 1
 
     def add_friend(self, user):
-        if not self.are_friends(user):
-            self.friend.append(user)
-            user.friend.append(self)
+        if not self.is_pending(user):
+            self.friends.append(user)
 
     def unfriend(self, user):
         if self.are_friends(user):
-            self.friend.remove(user)
-            user.friend.remove(self)
+            self.friends.remove(user)
+            user.friends.remove(self)
 
 
 class UserSchema(Schema):

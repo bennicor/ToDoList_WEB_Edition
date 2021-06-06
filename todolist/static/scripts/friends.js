@@ -48,14 +48,21 @@ function sendFriendRequest(friendCode) {
                 name.innerHTML = `${data["name"]}`;
                 email.innerHTML = `${data["email"]}`;
 
-                // Проверяем если найденный пользователь есть
-                // у человека в друзьях и меняем кнопку
+                console.log(data["is_pending"])
+                    // Проверяем если найденный пользователь есть
+                    // у человека в друзьях
                 if (data["are_friends"] === true) {
                     // Изменить кнопку на кнопку удаления из друзей
                     button.setAttribute("class", "btn btn-danger");
                     button.setAttribute("value", "Remove Friend")
 
                     profile.setAttribute("action", `${request_urls["removeFriend"]}${data["id"]}`);
+                }
+
+                // Если мы уже отправили заявку
+                if (data["is_pending"] === true) {
+                    button.setAttribute("disabled", true);
+                    button.setAttribute("value", "Request is Sent");
                 }
 
                 errorMessage.innerHTML = "";
