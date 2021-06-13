@@ -1,8 +1,41 @@
 {% extends "base.html" %}
 {% block content %}
-<div id="friends-nav">
+<div class="d-flex">
+    <span class="friends-nav select-tab" id="tab-friend">
+        <p>Friends</p>
+    </span>
+    <span class="friends-nav" id="tab-pending">
+        <p>Pending</p>
+    </span>
+    <span class="friends-nav" id="tab-add-friend">
+        <p>Add Friend</p>
+    </span>
 </div>
-<div class="container" id="add-friend-block">
+
+<div id="tab-friend-content" class="tab-content d-block">
+    <h2>Friends</h2>
+    <ul>
+        {% for friend in friends %}
+            <li>{{ friend }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div id="tab-pending-content" class="tab-content">
+    <h2>Pending</h2>
+    <ul>
+        {% for val, key in pending.items() %}
+            <h2>{{ val.capitalize() }} Requests</h2>
+            <ul>
+            {% for friend in key %}
+                <li>{{ friend }}</li>
+            {% endfor %}
+            </ul>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="container tab-content" id="tab-add-friend-content">
     <div class="row no-gutters my-4">
         <div class="col-12">
             <h1>Add a friend</h1>
@@ -39,14 +72,6 @@
             </div>
         </form>
     </div>
-</div>
-<div class="my-5">
-    <h2 class="text-center">Your Friends</h2>
-    <ul>
-        {% for friend in friends %}
-            <li>{{ friend }}</li>
-        {% endfor %}
-    </ul>
 </div>
 
 {% endblock content %}

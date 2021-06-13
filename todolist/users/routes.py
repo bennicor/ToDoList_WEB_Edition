@@ -174,9 +174,15 @@ def update_account():
 def friends():
     session["url"] = url_for("users.friends")
     code = current_user.friend_code
-    # Отображаем всех друзей, кроме самого пользователя
-    friends = list(filter(lambda user: user.friend_code != code and user.are_friends(current_user), current_user.friends.all()))
-    return render_template("friends.html", title="Your Friends",user_code=code, friends=friends)
+    
+    # Отображаем всех друзей пользователя
+    friends = [user for user in current_user.friends.all() if user.are_friends(current_user)]
+
+    # Список всех людей, которые отправили заявку в друзья
+    # текущему пользователю
+    pending = get_pending(current_user)
+
+    return render_template("friends.html", title="Your Friends",user_code=code, friends=friends, pending=pending)
 
 
 @users.route("/show_friend", methods=["POST"])
@@ -192,9 +198,11 @@ def show_friend():
         user = get_user(user_id=current_user.id)
     
         result = UserSchema().dump(friend)
-        result["are_friends"] = user.are_friends(friend)
         # Проверяем если уже отправили запрос
-        result["is_pending"] = user in get_pending(friend)
+        result["outcoming_pending"] = user.outcoming_pending(friend)
+        result["incoming_pending"] = user.incoming_pending(friend)
+        result["are_friends"] = user.are_friends(friend)
+        result["user_id"] = user.id # Передаем id текущего пользователя
     return make_response(jsonify(result), 200)
 
 

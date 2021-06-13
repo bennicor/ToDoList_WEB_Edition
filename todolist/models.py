@@ -77,12 +77,16 @@ class User(SqlAlchemyBase, UserMixin):
         # Проверяем на наличие сущностей в списке друзей обоих пользователей
         return all([self.friends.filter(friendship.c.friend_id == user.id).count() == 1, user.friends.filter(friendship.c.friend_id == self.id).count() == 1])
 
-    def is_pending(self, user):
-        # Если есть вхождение хотя бы в одном списке друзей
+    def incoming_pending(self, user):
+        # Если пользователю отправили запрос дружбы
+        return user.friends.filter(friendship.c.friend_id == self.id).count() == 1
+
+    def outcoming_pending(self, user):
+        # Если пользователь уже отправил запрос дружбы другому пользователю
         return self.friends.filter(friendship.c.friend_id == user.id).count() == 1
 
     def add_friend(self, user):
-        if not self.is_pending(user):
+        if not self.outcoming_pending(user) and not self.are_friends(user):
             self.friends.append(user)
 
     def unfriend(self, user):

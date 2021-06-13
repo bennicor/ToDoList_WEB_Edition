@@ -34,13 +34,31 @@ def get_user(user_id=None, email=None, friend_code=None):
 
     return user
 
+
 def get_pending(user):
     db_sess = db_session.create_session()
+    result = {"incoming": [], "outcoming": []}
 
     # Возвращает список отношений, в которых пользователю была отправлена заявка
-    pending = db_sess.query(friendship.c.user_id).filter(friendship.c.friend_id==user.id).all()
-    
-    # Преобразуем результат
-    result = [get_user(user_id=user[0]) for user in pending]
+    incoming = db_sess.query(friendship.c.user_id).filter(friendship.c.friend_id==user.id).all()
+
+    # Список пользователей, которым пользователь отправил заявку
+    outcoming = db_sess.query(friendship.c.friend_id).filter(friendship.c.user_id==user.id).all()
+
+    for i in outcoming:
+        # Получаем обьект отправителя
+        friend = get_user(user_id=i[0])
+
+        # Проверяем, если они друзья
+        if not user.are_friends(friend):
+            result["outcoming"].append(friend)
+
+    for i in incoming:
+        # Получаем обьект отправителя
+        friend = get_user(user_id=i[0])
+
+        # Проверяем, если они друзья
+        if not user.are_friends(friend):
+            result["incoming"].append(friend)
 
     return result
